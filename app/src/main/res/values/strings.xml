@@ -1,7 +1,17 @@
 <resources>
     <string name="app_name">StepCounterTestApp</string>
-    <string name="steps">Steps</string>
+    <string name="steps">Steps counter</string>
+    <string name="step_detector">detector</string>
     <string name="rounds">Rounds</string>
     <string name="current_round">Current round</string>
     <string name="step_counter_column">Step Counter</string>
+    <string name="start">Start</string>
+    <string name="delete">Delete</string>
+    <string name="send">Send</string>
+    <array name="pockets_list">
+        <item>Back Pants Pocket</item>
+        <item>Front Pants Pocket</item>
+        <item>Front Shirt Pocket</item>
+        <item>Looking at phone</item>
+    </array>
 </resources>
