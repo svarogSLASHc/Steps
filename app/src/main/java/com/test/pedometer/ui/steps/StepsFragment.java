@@ -1,5 +1,6 @@
 package com.test.pedometer.ui.steps;
 
+import android.content.Intent;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import com.test.pedometer.R;
 import com.test.pedometer.common.BaseFragment;
 import com.test.pedometer.common.list.ListItem;
+import com.test.pedometer.ui.service.FStepService;
 import com.test.pedometer.ui.steps.adapter.PocketAdapter;
 import com.test.pedometer.ui.steps.adapter.PocketItemDelegate;
 
@@ -38,6 +40,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     @OnClick(R.id.start)
     void startClick() {
         presenter.startClick();
+        getActivity().startService(new Intent(getContext(), FStepService.class));
     }
 
     @OnClick(R.id.send)
@@ -48,6 +51,8 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     @OnClick(R.id.delete)
     void deleteClick() {
         presenter.deleteClick();
+        getActivity().stopService(new Intent(getContext(), FStepService.class));
+        clearUI();
     }
 
     private PocketAdapter pocketAdapter;
@@ -67,6 +72,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         initList();
         presenter = new StepsPresenter(this);
         presenter.onViewCreated();
+        clearUI();
 
     }
 
@@ -115,4 +121,8 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         pockets.setAdapter(pocketAdapter);
     }
 
+    private void clearUI() {
+        stepsCounter.setText("0");
+        stepsDetector.setText("0");
+    }
 }
