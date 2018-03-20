@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">StepCounterTestApp</string>
+    <string name="steps">Steps</string>
+    <string name="rounds">Rounds</string>
+    <string name="current_round">Current round</string>
+    <string name="step_counter_column">Step Counter</string>
+</resources>
