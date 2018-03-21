@@ -2,7 +2,7 @@ package com.test.pedometer.data;
 
 import android.content.Context;
 
-import com.test.pedometer.ui.service.FStepService;
+import com.test.pedometer.domain.StepCountListener;
 
 public class PedomenetController {
     private static PedomenetController INSTANCE;
@@ -23,11 +23,11 @@ public class PedomenetController {
         pedomenterManager.onCreate();
     }
 
-    public void registerListener(FStepService.StepCountListener listener) {
+    public void registerListener(StepCountListener listener) {
         pedomenterManager.registerListener(listener);
     }
 
-    public void unregisterListener(FStepService.StepCountListener listener) {
+    public void unregisterListener(StepCountListener listener) {
         pedomenterManager.unregisterListener(listener);
     }
 

@@ -17,8 +17,6 @@ public class PocketItemViewHolder extends ListViewHolder<PocketViewModel> {
     private final PocketItemDelegate.PocketSelectListener selectListener;
     @BindView(R.id.title)
     TextView title;
-    @BindView(R.id.pocket_container)
-    View container;
 
     public PocketItemViewHolder(@NonNull ViewGroup parent, int resourceId, @NonNull ListAdapter adapter, PocketItemDelegate.PocketSelectListener selectListener) {
         super(parent, resourceId, adapter);
@@ -29,7 +27,7 @@ public class PocketItemViewHolder extends ListViewHolder<PocketViewModel> {
     public void bindData(@NonNull final PocketViewModel data) {
         title.setText(data.getTitle());
         title.setTextColor(data.isSelected()?Color.BLACK:Color.GRAY);
-        container.setOnClickListener(new View.OnClickListener() {
+        title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 selectListener.onPocketSelect(data.getTitle());

@@ -4,6 +4,7 @@ import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
 import com.test.pedometer.data.PedomenetController;
+import com.test.pedometer.domain.StepCountListener;
 import com.test.pedometer.ui.service.FStepService;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class StepsPresenter extends BasePresenter<StepsView> {
     private String pocket;
     private PedomenetController pedomenetController;
-    private final FStepService.StepCountListener pedometerListener = new FStepService.StepCountListener() {
+    private final StepCountListener pedometerListener = new StepCountListener() {
         @Override
         public void onStepDataUpdate(int stepCount) {
             view.setStepsCounted(stepCount);
@@ -58,12 +59,22 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     }
 
     public void deleteClick() {
-        pedomenetController.unregisterListener(pedometerListener);
+        unsubscribeFromSteps();
+        view.enableStart();
+        view.disableDelete();
     }
 
     public void startClick() {
+        subscribeOnSteps();
+        view.disableStart();
+        view.enableDelete();
+    }
+
+    public void subscribeOnSteps() {
         pedomenetController.registerListener(pedometerListener);
     }
 
-
+    public void unsubscribeFromSteps() {
+        pedomenetController.unregisterListener(pedometerListener);
+    }
 }

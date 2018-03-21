@@ -9,27 +9,27 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.test.pedometer.ui.service.FStepService;
+import com.test.pedometer.domain.StepCountListener;
 
 import java.util.ArrayList;
 
 import static android.content.Context.SENSOR_SERVICE;
 
 public class PedomenterManager implements SensorEventListener {
+    private static String TAG = "PedomenterManager";
     private SensorManager mSensorManager;
     private Sensor mStepCounter, mStepDetector;
     private Handler mUiHandler;
-    private ArrayList<FStepService.StepCountListener> mListeners = new ArrayList<>();
+    private ArrayList<StepCountListener> mListeners = new ArrayList<>();
     private int mLastCount, mInitialCount;
     private boolean mInitialCountInitialized;
     private int mLastDetectorCount;
 
-    public static PedomenterManager getInstance(Context context){
+    public static PedomenterManager getInstance(Context context) {
         return new PedomenterManager(context);
     }
 
     private PedomenterManager(Context context) {
-        Log.v("FStepService", "Creating the service");
         mSensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         mStepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
@@ -52,7 +52,6 @@ public class PedomenterManager implements SensorEventListener {
      * hardware sensor events buffer size, to avoid dropping steps.
      *
      * @param stepCounter The Step Counter sensor
-     *
      * @return Returns the optimal update interval, in milliseconds
      */
     private static int calcSensorReportInterval(Sensor stepCounter) {
@@ -74,10 +73,10 @@ public class PedomenterManager implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         final int type = event.sensor.getType();
         if (type == Sensor.TYPE_STEP_COUNTER) {
-            Log.v("FStepService", "New step counter event. Value: " + (int)event.values[0]);
+            Log.v(TAG, "New step counter event. Value: " + (int) event.values[0]);
 
             if (!mInitialCountInitialized) {
-                Log.i("FStepService", "Initializing initial steps count: " + (int) event.values[0]);
+                Log.i(TAG, "Initializing initial steps count: " + (int) event.values[0]);
                 mInitialCount = (int) event.values[0];
                 mInitialCountInitialized = true;
             }
@@ -85,10 +84,9 @@ public class PedomenterManager implements SensorEventListener {
             mLastCount = (int) event.values[0] - mInitialCount;
 
             postSensorChange(mLastCount, Sensor.TYPE_STEP_COUNTER);
-        }
-        else if (type == Sensor.TYPE_STEP_DETECTOR) {
+        } else if (type == Sensor.TYPE_STEP_DETECTOR) {
             mLastDetectorCount++;
-            Log.v("FStepService", "New step detector event. Updated count: " + mLastDetectorCount);
+            Log.v(TAG, "New step detector event. Updated count: " + mLastDetectorCount);
 
             postSensorChange(mLastDetectorCount, Sensor.TYPE_STEP_DETECTOR);
         }
@@ -104,26 +102,23 @@ public class PedomenterManager implements SensorEventListener {
     private void postSensorChange(final int value, final int type) {
         if (Looper.getMainLooper().equals(Looper.myLooper())) {
             // UI thread
-            for (FStepService.StepCountListener l : mListeners) {
+            for (StepCountListener l : mListeners) {
                 if (type == Sensor.TYPE_STEP_COUNTER) {
                     l.onStepDataUpdate(value);
-                }
-                else if (type == Sensor.TYPE_STEP_DETECTOR) {
+                } else if (type == Sensor.TYPE_STEP_DETECTOR) {
                     l.onStep(value);
                 }
             }
-        }
-        else {
+        } else {
             // Non-UI thread
             mUiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (FStepService.StepCountListener l : mListeners) {
+                    for (StepCountListener listener : mListeners) {
                         if (type == Sensor.TYPE_STEP_COUNTER) {
-                            l.onStepDataUpdate(value);
-                        }
-                        else if (type == Sensor.TYPE_STEP_DETECTOR) {
-                            l.onStep(value);
+                            listener.onStepDataUpdate(value);
+                        } else if (type == Sensor.TYPE_STEP_DETECTOR) {
+                            listener.onStep(value);
                         }
                     }
                 }
@@ -131,25 +126,24 @@ public class PedomenterManager implements SensorEventListener {
         }
     }
 
-    public void registerListener(FStepService.StepCountListener l) {
-        mListeners.add(l);
-        Log.v("FStepService", "Feeding last known step count to newly registered listener");
-        l.onStepDataUpdate(mLastCount);
+    public void registerListener(StepCountListener listener) {
+        mListeners.add(listener);
+        listener.onStepDataUpdate(mLastCount);
         mSensorManager.flush(this);
     }
 
-    public void unregisterListener(FStepService.StepCountListener l) {
-        Log.v("FStepService", "Unregistering a listener");
-        mListeners.remove(l);
+    public void unregisterListener(StepCountListener listener) {
+        mListeners.remove(listener);
     }
 
 
-    public void onDestroy(){
+    public void onDestroy() {
         mSensorManager.unregisterListener(this);
+        mLastCount = mInitialCount = mLastDetectorCount = 0;
+        mInitialCountInitialized = false;
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        Log.v("FStepService", "Sensor accuracy changed. New value: " + accuracy);
     }
 }

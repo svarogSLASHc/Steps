@@ -19,4 +19,12 @@ public interface StepsView extends BaseView {
     void setCurrentRound(int round);
 
     void showError(@StringRes int errorMsg);
+
+    void disableDelete();
+
+    void enableDelete();
+
+    void disableStart();
+
+    void enableStart();
 }

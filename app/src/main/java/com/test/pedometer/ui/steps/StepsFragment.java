@@ -73,7 +73,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         presenter = new StepsPresenter(this);
         presenter.onViewCreated();
         clearUI();
-
+        disableDelete();
     }
 
     @Override
@@ -107,8 +107,40 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     @Override
+    public void disableDelete() {
+        switchDeleteState(false);
+    }
+
+    @Override
+    public void enableDelete() {
+        switchDeleteState(true);
+    }
+
+    @Override
+    public void disableStart() {
+        switchStartState(false);
+    }
+
+    @Override
+    public void enableStart() {
+        switchStartState(true);
+    }
+
+    @Override
     public void onPocketSelect(String title) {
         presenter.pocketSelected(title);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        presenter.subscribeOnSteps();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        presenter.unsubscribeFromSteps();
     }
 
     private void initList() {
@@ -124,5 +156,15 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     private void clearUI() {
         stepsCounter.setText("0");
         stepsDetector.setText("0");
+    }
+
+
+    private void switchDeleteState(boolean enabled){
+        delete.setEnabled(enabled);
+    }
+
+
+    private void switchStartState(boolean enabled){
+        start.setEnabled(enabled);
     }
 }
