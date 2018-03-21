@@ -9,17 +9,17 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PedometerLoggerController {
+public class FileLoggerController {
     private static final String SPACE = ". ";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss.SSS");
     private FileLogManager fileLogManager;
 
 
-    public static PedometerLoggerController newInstance(Context context) {
-        return new PedometerLoggerController(context);
+    public static FileLoggerController newInstance(Context context) {
+        return new FileLoggerController(context);
     }
 
-    private PedometerLoggerController(Context context) {
+    private FileLoggerController(Context context) {
         fileLogManager = FileLogManager.getInstance(context);
     }
 
@@ -44,6 +44,5 @@ public class PedometerLoggerController {
 
     public void clear() {
         fileLogManager.clear();
-        ;
     }
 }

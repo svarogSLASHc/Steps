@@ -1,5 +1,6 @@
 package com.test.pedometer.ui.steps;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,6 +61,13 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     public static StepsFragment getInstance() {
         return new StepsFragment();
+    }
+
+    @Override
+    protected void setupActionBar(android.support.v7.app.ActionBar actionBar) {
+        actionBar.setDisplayUseLogoEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        actionBar.setTitle(R.string.app_name);
     }
 
     @Override
@@ -159,12 +167,12 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
 
-    private void switchDeleteState(boolean enabled){
+    private void switchDeleteState(boolean enabled) {
         delete.setEnabled(enabled);
     }
 
 
-    private void switchStartState(boolean enabled){
+    private void switchStartState(boolean enabled) {
         start.setEnabled(enabled);
     }
 }

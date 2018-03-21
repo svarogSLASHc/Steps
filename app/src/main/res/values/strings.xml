@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">StepCounterTestApp</string>
+    <string name="app_name">Step Counter</string>
     <string name="steps">Steps counter</string>
     <string name="step_detector">detector</string>
     <string name="rounds">Rounds</string>
@@ -9,6 +9,10 @@
     <string name="delete">Delete</string>
     <string name="send">Send</string>
     <string name="step_counter_result">Step Counter: %d, detector: %d.</string>
+    <string name="settings_steps">Steps</string>
+    <string name="settings_please_enter_number_of_steps">Please enter number of steps</string>
+    <string name="round_time">Round time</string>
+    <string name="settings">Settings</string>
     <array name="pockets_list">
         <item>Back Pants Pocket</item>
         <item>Front Pants Pocket</item>

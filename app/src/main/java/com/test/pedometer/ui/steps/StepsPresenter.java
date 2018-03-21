@@ -5,7 +5,7 @@ import android.util.Log;
 import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
-import com.test.pedometer.data.fileaccess.PedometerLoggerController;
+import com.test.pedometer.data.fileaccess.FileLoggerController;
 import com.test.pedometer.data.sensors.PedometerController;
 import com.test.pedometer.domain.StepCountListener;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StepsPresenter extends BasePresenter<StepsView> {
-    private static final String SPACE = " ";
+    private static final String SPACE = ". ";
     private String pocket;
     private PedometerController pedometerController;
-    private PedometerLoggerController fileLog;
+    private FileLoggerController fileLog;
     private int stepCounter;
     private int stepDetector;
     private final StepCountListener pedometerListener = new StepCountListener() {
@@ -38,7 +38,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     protected StepsPresenter(StepsView view) {
         super(view);
         pedometerController = PedometerController.getInstance(view.getContext().getApplicationContext());
-        fileLog = PedometerLoggerController.newInstance(view.getContext());
+        fileLog = FileLoggerController.newInstance(view.getContext());
     }
 
     @Override
