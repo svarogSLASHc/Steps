@@ -5,18 +5,18 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.test.pedometer.data.PedomenetController;
+import com.test.pedometer.data.sensors.PedometerController;
 
 public class FStepService extends Service {
     private static String TAG = "FStepService";
-    private PedomenetController pedomenetController;
+    private PedometerController pedometerController;
 
     @Override
     public void onCreate() {
         Log.v(TAG, "Creating the service");
         super.onCreate();
-        pedomenetController = PedomenetController.getInstance(getApplicationContext());
-        pedomenetController.onCreate();
+        pedometerController = PedometerController.getInstance(getApplicationContext());
+        pedometerController.onCreate();
     }
 
 
@@ -28,6 +28,6 @@ public class FStepService extends Service {
     public void onDestroy() {
         Log.v(TAG, "Destroying the service");
         super.onDestroy();
-        pedomenetController.onDestroy();
+        pedometerController.onDestroy();
     }
 }

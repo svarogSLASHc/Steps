@@ -1,4 +1,4 @@
-package com.test.pedometer.data;
+package com.test.pedometer.data.sensors;
 
 import android.content.Context;
 import android.hardware.Sensor;

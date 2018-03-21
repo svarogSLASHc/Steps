@@ -8,6 +8,7 @@
     <string name="start">Start</string>
     <string name="delete">Delete</string>
     <string name="send">Send</string>
+    <string name="step_counter_result">Step Counter: %d, detector: %d.</string>
     <array name="pockets_list">
         <item>Back Pants Pocket</item>
         <item>Front Pants Pocket</item>

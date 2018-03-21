@@ -1,21 +1,21 @@
-package com.test.pedometer.data;
+package com.test.pedometer.data.sensors;
 
 import android.content.Context;
 
 import com.test.pedometer.domain.StepCountListener;
 
-public class PedomenetController {
-    private static PedomenetController INSTANCE;
+public class PedometerController {
+    private static PedometerController INSTANCE;
     private final PedomenterManager pedomenterManager;
 
-    public static PedomenetController getInstance(Context context){
+    public static PedometerController getInstance(Context context){
         if (INSTANCE == null){
-            INSTANCE = new PedomenetController(context);
+            INSTANCE = new PedometerController(context);
         }
         return INSTANCE;
     }
 
-    private PedomenetController(Context context){
+    private PedometerController(Context context){
         pedomenterManager = PedomenterManager.getInstance(context);
     }
 
