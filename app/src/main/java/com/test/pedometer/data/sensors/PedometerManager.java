@@ -15,8 +15,8 @@ import java.util.ArrayList;
 
 import static android.content.Context.SENSOR_SERVICE;
 
-public class PedomenterManager implements SensorEventListener {
-    private static String TAG = "PedomenterManager";
+public class PedometerManager implements SensorEventListener {
+    private static String TAG = "PedometerManager";
     private SensorManager mSensorManager;
     private Sensor mStepCounter, mStepDetector;
     private Handler mUiHandler;
@@ -25,11 +25,11 @@ public class PedomenterManager implements SensorEventListener {
     private boolean mInitialCountInitialized;
     private int mLastDetectorCount;
 
-    public static PedomenterManager getInstance(Context context) {
-        return new PedomenterManager(context);
+    public static PedometerManager getInstance(Context context) {
+        return new PedometerManager(context);
     }
 
-    private PedomenterManager(Context context) {
+    private PedometerManager(Context context) {
         mSensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         mStepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);

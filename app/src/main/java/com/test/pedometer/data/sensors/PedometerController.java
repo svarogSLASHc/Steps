@@ -6,7 +6,7 @@ import com.test.pedometer.domain.StepCountListener;
 
 public class PedometerController {
     private static PedometerController INSTANCE;
-    private final PedomenterManager pedomenterManager;
+    private final PedometerManager pedometerManager;
 
     public static PedometerController getInstance(Context context){
         if (INSTANCE == null){
@@ -16,22 +16,22 @@ public class PedometerController {
     }
 
     private PedometerController(Context context){
-        pedomenterManager = PedomenterManager.getInstance(context);
+        pedometerManager = PedometerManager.getInstance(context);
     }
 
     public void onCreate(){
-        pedomenterManager.onCreate();
+        pedometerManager.onCreate();
     }
 
     public void registerListener(StepCountListener listener) {
-        pedomenterManager.registerListener(listener);
+        pedometerManager.registerListener(listener);
     }
 
     public void unregisterListener(StepCountListener listener) {
-        pedomenterManager.unregisterListener(listener);
+        pedometerManager.unregisterListener(listener);
     }
 
     public void onDestroy(){
-        pedomenterManager.onDestroy();
+        pedometerManager.onDestroy();
     }
 }
