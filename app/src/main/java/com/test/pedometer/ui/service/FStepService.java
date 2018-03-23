@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.test.pedometer.data.sensors.PedometerController;
 import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 
 public class FStepService extends Service {
@@ -22,6 +21,12 @@ public class FStepService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         stepDetectorTestRunner.start();
+        stepDetectorTestRunner.isRunning()
+                .subscribe(isRunning -> {
+                    if (!isRunning){
+                        stopSelf();
+                    }
+                });
         return super.onStartCommand(intent, flags, startId);
     }
 
