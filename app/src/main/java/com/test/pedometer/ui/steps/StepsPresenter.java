@@ -8,6 +8,7 @@ import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
 import com.test.pedometer.data.fileaccess.FileLoggerController;
+import com.test.pedometer.data.network.NetworkController;
 import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 import com.test.pedometer.data.settings.SettingsManager;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
@@ -16,7 +17,10 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Observable;
+import rx.Scheduler;
 import rx.Subscription;
+import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 public class StepsPresenter extends BasePresenter<StepsView> {
@@ -60,7 +64,23 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
     public void sendClick() {
         try {
-            Log.d("test_log", fileLog.getLogFileAsString());
+            final int resultsCount = fileLog.getLogFileAsString().split("\n").length;
+            if (resultsCount == 0){
+                view.showError(view.getContext().getString(R.string.nothing));
+                return;
+            }
+            NetworkController.getInstance(view.getContext())
+                    .uploadResults(fileLog.getLogFileAsString())
+                    .subscribeOn(Schedulers.io())
+                    .onErrorResumeNext(throwable -> {
+                        handlerMainThread.post(() -> view.showError(throwable.getMessage()));
+                        return Observable.just("");
+                    })
+                    .subscribe(s -> {
+                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + resultsCount + " results"));
+                        fileLog.clear();
+                    });
+
         } catch (FileNotFoundException e) {
             view.showError(e.getMessage());
         }
@@ -93,15 +113,14 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                         .currentRoundObservable()
                         .subscribe(round -> handlerMainThread.post(() -> view.setCurrentRound(round))),
                 stepDetectorTestRunner
-        .isRunning()
-        .subscribe(running -> {
-            if (running){
-                handlerMainThread.post(this::disableStart);
-            }
-            else{
-                handlerMainThread.post(this::enableStart);
-            }
-        }));
+                        .isRunning()
+                        .subscribe(running -> {
+                            if (running) {
+                                handlerMainThread.post(this::disableStart);
+                            } else {
+                                handlerMainThread.post(this::enableStart);
+                            }
+                        }));
     }
 
     public void unsubscribeFromSteps() {

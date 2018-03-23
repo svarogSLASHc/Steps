@@ -104,7 +104,12 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     @Override
     public void showError(String errorMsg) {
-        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+        showMsg(errorMsg);
+    }
+
+    @Override
+    public void showSuccess(String msg) {
+        showMsg(msg);
     }
 
     @Override
@@ -164,5 +169,9 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     private void switchStartState(boolean enabled) {
         start.setEnabled(enabled);
+    }
+
+    private void showMsg(String msg) {
+        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
     }
 }

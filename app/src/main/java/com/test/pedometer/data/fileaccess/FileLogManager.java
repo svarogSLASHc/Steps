@@ -73,7 +73,7 @@ public class FileLogManager {
     }
 
     public void clear() {
-        getFile().deleteOnExit();
+        getFile().delete();
     }
 
     private void writeBufferToFile(String text) {

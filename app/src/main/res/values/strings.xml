@@ -22,4 +22,5 @@
         <item>Front Shirt Pocket</item>
         <item>Looking at phone</item>
     </array>
+    <string name="nothing">Nothing to upload</string>
 </resources>

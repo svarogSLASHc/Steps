@@ -1,7 +1,5 @@
 package com.test.pedometer.ui.steps;
 
-import android.support.annotation.StringRes;
-
 import com.test.pedometer.common.BaseView;
 import com.test.pedometer.common.list.ListItem;
 
@@ -17,6 +15,8 @@ public interface StepsView extends BaseView {
     void setCurrentRound(int round);
 
     void showError(String errorMsg);
+
+    void showSuccess(String msg);
 
     void disableDelete();
 
