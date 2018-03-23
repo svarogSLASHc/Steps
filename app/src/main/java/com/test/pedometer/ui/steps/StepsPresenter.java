@@ -2,7 +2,6 @@ package com.test.pedometer.ui.steps;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
-import rx.Scheduler;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
@@ -64,11 +62,17 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
     public void sendClick() {
         try {
-            final int resultsCount = fileLog.getLogFileAsString().split("\n").length;
+            int resultsCount = 0;
+            for(String item: fileLog.getLogFileAsString().split("\n")){
+                if (!item.isEmpty()){
+                    resultsCount++;
+                }
+            }
             if (resultsCount == 0){
                 view.showError(view.getContext().getString(R.string.nothing));
                 return;
             }
+            final int finalResultsCount = resultsCount;
             NetworkController.getInstance(view.getContext())
                     .uploadResults(fileLog.getLogFileAsString())
                     .subscribeOn(Schedulers.io())
@@ -77,7 +81,8 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                         return Observable.just("");
                     })
                     .subscribe(s -> {
-                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + resultsCount + " results"));
+
+                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + finalResultsCount + " results"));
                         fileLog.clear();
                     });
 
