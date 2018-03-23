@@ -6,19 +6,24 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.test.pedometer.data.sensors.PedometerController;
+import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 
 public class FStepService extends Service {
     private static String TAG = "FStepService";
-    private PedometerController pedometerController;
+    private StepDetectorTestRunner stepDetectorTestRunner;
 
     @Override
     public void onCreate() {
         Log.v(TAG, "Creating the service");
         super.onCreate();
-        pedometerController = PedometerController.getInstance(getApplicationContext());
-        pedometerController.onCreate();
+        stepDetectorTestRunner = StepDetectorTestRunner.getInstance(this.getApplicationContext());
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        stepDetectorTestRunner.start();
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     public IBinder onBind(Intent intent) {
         return null;
@@ -28,6 +33,6 @@ public class FStepService extends Service {
     public void onDestroy() {
         Log.v(TAG, "Destroying the service");
         super.onDestroy();
-        pedometerController.onDestroy();
+        stepDetectorTestRunner.stop();
     }
 }

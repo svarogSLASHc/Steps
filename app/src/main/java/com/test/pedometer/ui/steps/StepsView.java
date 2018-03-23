@@ -12,13 +12,11 @@ public interface StepsView extends BaseView {
 
     void setStepsCounted(int steps);
 
-    void setStepsDetected(int steps);
-
     void setTotalRounds(int rounds);
 
     void setCurrentRound(int round);
 
-    void showError(@StringRes int errorMsg);
+    void showError(String errorMsg);
 
     void disableDelete();
 

@@ -1,49 +1,43 @@
 package com.test.pedometer.ui.steps;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
 import com.test.pedometer.data.fileaccess.FileLoggerController;
-import com.test.pedometer.data.sensors.PedometerController;
-import com.test.pedometer.domain.StepCountListener;
+import com.test.pedometer.data.sensors.StepDetectorTestRunner;
+import com.test.pedometer.data.settings.SettingsManager;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StepsPresenter extends BasePresenter<StepsView> {
-    private static final String SPACE = ". ";
-    private String pocket;
-    private PedometerController pedometerController;
-    private FileLoggerController fileLog;
-    private int stepCounter;
-    private int stepDetector;
-    private final StepCountListener pedometerListener = new StepCountListener() {
-        @Override
-        public void onStepDataUpdate(int stepCount) {
-            view.setStepsCounted(stepCount);
-            stepCounter = stepCount;
-        }
+import rx.Subscription;
+import rx.subscriptions.Subscriptions;
 
-        @Override
-        public void onStep(int count) {
-            view.setStepsDetected(count);
-            stepDetector = count;
-        }
-    };
+public class StepsPresenter extends BasePresenter<StepsView> {
+    private final StepDetectorTestRunner stepDetectorTestRunner;
+    private final SettingsManager settingsManager;
+    private FileLoggerController fileLog;
+    private Subscription currentRoundSubscription = Subscriptions.empty();
+    private Handler handlerMainThread = new Handler(Looper.getMainLooper());
 
     protected StepsPresenter(StepsView view) {
         super(view);
-        pedometerController = PedometerController.getInstance(view.getContext().getApplicationContext());
+        stepDetectorTestRunner = StepDetectorTestRunner.getInstance(view.getContext().getApplicationContext());
         fileLog = FileLoggerController.newInstance(view.getContext());
+        settingsManager = SettingsManager.getInstance(view.getContext());
     }
 
     @Override
     public void onViewCreated() {
         setPockets(null);
+        view.setStepsCounted(settingsManager.getSteps());
+        view.setTotalRounds(settingsManager.getRounds());
     }
 
     private void setPockets(String current) {
@@ -51,13 +45,13 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         if (null == current) {
             current = pockets[0];
         }
-        pocket = current;
 
         List<ListItem> pocketViewModels = new ArrayList<>(pockets.length);
         for (String item : pockets) {
             pocketViewModels.add(new PocketViewModel(item, item.equals(current)));
         }
         view.setPocketList(pocketViewModels);
+        settingsManager.setPocket(current);
     }
 
     public void pocketSelected(String title) {
@@ -68,40 +62,51 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         try {
             Log.d("test_log", fileLog.getLogFileAsString());
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            view.showError(e.getMessage());
         }
     }
 
     public void deleteClick() {
         unsubscribeFromSteps();
+        stepDetectorTestRunner.deleteLog();
+        enableStart();
+    }
 
-        fileLog.logRedometerData(getStepResultString());
-
+    private void enableStart() {
         view.enableStart();
         view.disableDelete();
     }
 
     public void startClick() {
-        stepCounter = 0;
-        stepDetector = 0;
         subscribeOnSteps();
+        disableStart();
+    }
+
+    private void disableStart() {
         view.disableStart();
         view.enableDelete();
     }
 
     public void subscribeOnSteps() {
-        pedometerController.registerListener(pedometerListener);
+        currentRoundSubscription = Subscriptions.from(
+                stepDetectorTestRunner
+                        .currentRoundObservable()
+                        .subscribe(round -> handlerMainThread.post(() -> view.setCurrentRound(round))),
+                stepDetectorTestRunner
+        .isRunning()
+        .subscribe(running -> {
+            if (running){
+                handlerMainThread.post(this::disableStart);
+            }
+            else{
+                handlerMainThread.post(this::enableStart);
+            }
+        }));
     }
 
     public void unsubscribeFromSteps() {
-        pedometerController.unregisterListener(pedometerListener);
-    }
-
-    private String getStepResultString() {
-        return new StringBuilder()
-                .append(pocket)
-                .append(SPACE)
-                .append(view.getContext().getString(R.string.step_counter_result, stepCounter, stepDetector))
-                .toString();
+        if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
+            currentRoundSubscription.unsubscribe();
+        }
     }
 }

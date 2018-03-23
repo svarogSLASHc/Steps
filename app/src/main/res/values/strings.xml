@@ -8,7 +8,7 @@
     <string name="start">Start</string>
     <string name="delete">Delete</string>
     <string name="send">Send</string>
-    <string name="step_counter_result">Step Counter: %d, detector: %d.</string>
+    <string name="step_counter_result">%s. Round:%d. Total rounds:%d .Step Counter: %d, detector: %d.</string>
     <string name="settings_steps">Steps</string>
     <string name="settings_please_enter_number_of_steps">Please enter number of steps</string>
     <string name="round_time">Round time</string>

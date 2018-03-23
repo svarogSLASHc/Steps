@@ -72,27 +72,5 @@
         app:layout_constraintStart_toStartOf="@id/steps"
         app:layout_constraintTop_toTopOf="@+id/textView3"
         tools:text="0" />
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/view_top_margin"
-        android:text="@string/step_detector"
-        app:layout_constraintBottom_toBottomOf="@id/steps"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.086"
-        app:layout_constraintStart_toEndOf="@id/steps"
-        app:layout_constraintTop_toTopOf="@id/steps"
-        app:layout_constraintVertical_bias="0.0" />
 
-    <TextView
-        android:id="@+id/step_detector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        tools:text="0"
-        app:layout_constraintBottom_toBottomOf="@id/textView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/textView"
-        app:layout_constraintTop_toTopOf="@id/textView" />
 </merge>

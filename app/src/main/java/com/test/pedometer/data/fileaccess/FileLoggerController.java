@@ -23,7 +23,7 @@ public class FileLoggerController {
         fileLogManager = FileLogManager.getInstance(context);
     }
 
-    public void logRedometerData(String data) {
+    public void logPedometerData(String data) {
         final StringBuilder stringBuilder = new StringBuilder(DATE_FORMAT.format(new Date()));
         fileLogManager.log(
                 stringBuilder

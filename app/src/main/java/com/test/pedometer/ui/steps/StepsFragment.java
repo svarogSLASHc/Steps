@@ -1,12 +1,12 @@
 package com.test.pedometer.ui.steps;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.test.pedometer.R;
 import com.test.pedometer.common.BaseFragment;
@@ -25,8 +25,6 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     RecyclerView pockets;
     @BindView(R.id.steps)
     TextView stepsCounter;
-    @BindView(R.id.step_detector)
-    TextView stepsDetector;
     @BindView(R.id.total_rounds)
     TextView totalRounds;
     @BindView(R.id.current_round)
@@ -95,11 +93,6 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     @Override
-    public void setStepsDetected(int steps) {
-        stepsDetector.setText(String.valueOf(steps));
-    }
-
-    @Override
     public void setTotalRounds(int rounds) {
         totalRounds.setText(String.valueOf(rounds));
     }
@@ -110,8 +103,8 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     @Override
-    public void showError(int errorMsg) {
-
+    public void showError(String errorMsg) {
+        Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -162,15 +155,12 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     private void clearUI() {
-        stepsCounter.setText("0");
-        stepsDetector.setText("0");
+        currentRound.setText("0");
     }
-
 
     private void switchDeleteState(boolean enabled) {
         delete.setEnabled(enabled);
     }
-
 
     private void switchStartState(boolean enabled) {
         start.setEnabled(enabled);

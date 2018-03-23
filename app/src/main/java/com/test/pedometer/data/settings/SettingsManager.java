@@ -52,4 +52,15 @@ public class SettingsManager implements SettingsFields {
                 .apply();
     }
 
+    public String getPocket() {
+        return preferences.getString(FIELD_POCKET, "");
+    }
+
+    public void setPocket(String pocket) {
+        preferences
+                .edit()
+                .putString(FIELD_POCKET, pocket)
+                .apply();
+    }
+
 }
