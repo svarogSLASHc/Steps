@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/main_padding">
@@ -19,14 +17,10 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.06" />
 
-    <EditText
+    <Spinner
         android:id="@+id/steps_to_make"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/settings_spinner_width"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/settings_please_enter_number_of_steps"
-        android:inputType="number"
-        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="@+id/textView5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.709"
@@ -47,13 +41,10 @@
         app:layout_constraintTop_toBottomOf="@id/textView5"
         app:layout_constraintVertical_bias="0.116" />
 
-    <EditText
+    <android.support.v7.widget.AppCompatSpinner
         android:id="@+id/rounds_to_make"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/settings_spinner_width"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        android:hint="@string/enter_rounds"
         app:layout_constraintBottom_toBottomOf="@id/textView6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -73,13 +64,10 @@
         app:layout_constraintTop_toBottomOf="@+id/textView6"
         app:layout_constraintVertical_bias="0.123" />
 
-    <EditText
+    <Spinner
         android:id="@+id/round_time"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/settings_spinner_width"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="number"
-        android:hint="@string/round_time_hint"
         app:layout_constraintBottom_toBottomOf="@+id/textView7"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -91,10 +79,7 @@
         android:id="@+id/save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="@dimen/save_btn_top_margin"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:padding="@dimen/view_padding"
         android:text="@string/settings_save"

@@ -6,4 +6,6 @@
     <dimen name="list_item_height">48dp</dimen>
     <dimen name="view_padding">8dp</dimen>
     <dimen name="start_btn_size">20sp</dimen>
+    <dimen name="settings_spinner_width">100dp</dimen>
+    <dimen name="save_btn_top_margin">28dp</dimen>
 </resources>

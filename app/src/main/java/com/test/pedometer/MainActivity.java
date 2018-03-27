@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import com.test.pedometer.ui.settings.SettingsFragment;
 import com.test.pedometer.ui.settings.SettingsView;
 import com.test.pedometer.ui.steps.StepsFragment;
+import com.test.pedometer.ui.tts.SpeakManager;
 
 public class MainActivity extends AppCompatActivity implements SettingsView.SaveListener {
 
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         loadFirstFragment();
+        SpeakManager.getInstance(this);
     }
 
 
