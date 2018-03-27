@@ -20,9 +20,9 @@ public interface StepsView extends BaseView {
 
     void disableDelete();
 
-    void enableDelete();
-
-    void disableStart();
-
     void enableStart();
+
+    void testIsRunning();
+
+    void testIsFinished();
 }

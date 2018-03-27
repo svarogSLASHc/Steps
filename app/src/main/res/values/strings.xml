@@ -23,4 +23,5 @@
         <item>Looking at phone</item>
     </array>
     <string name="nothing">Nothing to upload</string>
+    <string name="init_round_value">0</string>
 </resources>

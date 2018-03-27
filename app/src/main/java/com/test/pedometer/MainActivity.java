@@ -8,9 +8,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.test.pedometer.ui.settings.SettingsFragment;
+import com.test.pedometer.ui.settings.SettingsView;
 import com.test.pedometer.ui.steps.StepsFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SettingsView.SaveListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +35,17 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(SettingsFragment.getInstance());
                 return true;
             case android.R.id.home:
-                getSupportFragmentManager().popBackStack();
+                backToMainScreen();
                 return true;
             default:
 
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    private void backToMainScreen() {
+        getSupportFragmentManager().popBackStack();
     }
 
     private void loadFragment(Fragment fragment) {
@@ -57,5 +62,10 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.main_container, StepsFragment.getInstance())
                 .commit();
+    }
+
+    @Override
+    public void onSaveClicked() {
+        backToMainScreen();
     }
 }

@@ -35,6 +35,12 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     View send;
     @BindView(R.id.delete)
     View delete;
+    private PocketAdapter pocketAdapter;
+    private StepsPresenter presenter;
+
+    public static StepsFragment getInstance() {
+        return new StepsFragment();
+    }
 
     @OnClick(R.id.start)
     void startClick() {
@@ -52,13 +58,6 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         presenter.deleteClick();
         getActivity().stopService(new Intent(getContext(), FStepService.class));
         clearUI();
-    }
-
-    private PocketAdapter pocketAdapter;
-    private StepsPresenter presenter;
-
-    public static StepsFragment getInstance() {
-        return new StepsFragment();
     }
 
     @Override
@@ -118,18 +117,20 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     @Override
-    public void enableDelete() {
-        switchDeleteState(true);
+    public void enableStart() {
+        switchStartState(true);
     }
 
     @Override
-    public void disableStart() {
+    public void testIsRunning() {
+        switchDeleteState(false);
         switchStartState(false);
     }
 
     @Override
-    public void enableStart() {
-        switchStartState(true);
+    public void testIsFinished() {
+        switchDeleteState(true);
+        switchStartState(false);
     }
 
     @Override
@@ -160,11 +161,12 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     private void clearUI() {
-        currentRound.setText("0");
+        currentRound.setText(R.string.init_round_value);
     }
 
     private void switchDeleteState(boolean enabled) {
         delete.setEnabled(enabled);
+        send.setEnabled(enabled);
     }
 
     private void switchStartState(boolean enabled) {

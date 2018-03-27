@@ -42,6 +42,64 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         view.setTotalRounds(settingsManager.getRounds());
     }
 
+    public void pocketSelected(String title) {
+        setPockets(title);
+    }
+
+    public void sendClick() {
+        int resultsCount = getLogSize();
+        try {
+            final int finalResultsCount = resultsCount;
+            NetworkController.getInstance(view.getContext())
+                    .uploadResults(fileLog.getLogFileAsString())
+                    .subscribeOn(Schedulers.io())
+                    .onErrorResumeNext(throwable -> {
+                        handlerMainThread.post(() -> view.showError(throwable.getMessage()));
+                        return Observable.just("");
+                    })
+                    .subscribe(s -> {
+                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + finalResultsCount + " results"));
+                        deleteClick();
+                    });
+
+        } catch (FileNotFoundException e) {
+            view.showError(e.getMessage());
+        }
+    }
+
+    public void deleteClick() {
+        stepDetectorTestRunner.deleteLog();
+        enableStart();
+    }
+
+    public void startClick() {
+        subscribeOnSteps();
+    }
+
+    public void subscribeOnSteps() {
+        currentRoundSubscription = Subscriptions.from(
+                stepDetectorTestRunner
+                        .currentRoundObservable()
+                        .subscribe(round -> handlerMainThread.post(() -> view.setCurrentRound(round))),
+                stepDetectorTestRunner
+                        .isRunning()
+                        .subscribe(running -> {
+                            if (running) {
+                                handlerMainThread.post(view::testIsRunning);
+                            } else if (hasPreviousResults()) {
+                                handlerMainThread.post(view::testIsFinished);
+                            } else {
+                                enableStart();
+                            }
+                        }));
+    }
+
+    public void unsubscribeFromSteps() {
+        if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
+            currentRoundSubscription.unsubscribe();
+        }
+    }
+
     private void setPockets(String current) {
         final String[] pockets = view.getContext().getResources().getStringArray(R.array.pockets_list);
         if (null == current) {
@@ -56,81 +114,26 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         settingsManager.setPocket(current);
     }
 
-    public void pocketSelected(String title) {
-        setPockets(title);
-    }
-
-    public void sendClick() {
-        try {
-            int resultsCount = 0;
-            for(String item: fileLog.getLogFileAsString().split("\n")){
-                if (!item.isEmpty()){
-                    resultsCount++;
-                }
-            }
-            if (resultsCount == 0){
-                view.showError(view.getContext().getString(R.string.nothing));
-                return;
-            }
-            final int finalResultsCount = resultsCount;
-            NetworkController.getInstance(view.getContext())
-                    .uploadResults(fileLog.getLogFileAsString())
-                    .subscribeOn(Schedulers.io())
-                    .onErrorResumeNext(throwable -> {
-                        handlerMainThread.post(() -> view.showError(throwable.getMessage()));
-                        return Observable.just("");
-                    })
-                    .subscribe(s -> {
-
-                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + finalResultsCount + " results"));
-                        fileLog.clear();
-                    });
-
-        } catch (FileNotFoundException e) {
-            view.showError(e.getMessage());
-        }
-    }
-
-    public void deleteClick() {
-        unsubscribeFromSteps();
-        stepDetectorTestRunner.deleteLog();
-        enableStart();
-    }
-
     private void enableStart() {
         view.enableStart();
         view.disableDelete();
     }
 
-    public void startClick() {
-        subscribeOnSteps();
-        disableStart();
+    private boolean hasPreviousResults() {
+        return getLogSize() > 0;
     }
 
-    private void disableStart() {
-        view.disableStart();
-        view.enableDelete();
-    }
+    private int getLogSize() {
+        int resultsCount = 0;
+        try {
+            for (String item : fileLog.getLogFileAsString().split("\n")) {
+                if (!item.isEmpty()) {
+                    resultsCount++;
+                }
+            }
+        } catch (FileNotFoundException e) {
 
-    public void subscribeOnSteps() {
-        currentRoundSubscription = Subscriptions.from(
-                stepDetectorTestRunner
-                        .currentRoundObservable()
-                        .subscribe(round -> handlerMainThread.post(() -> view.setCurrentRound(round))),
-                stepDetectorTestRunner
-                        .isRunning()
-                        .subscribe(running -> {
-                            if (running) {
-                                handlerMainThread.post(this::disableStart);
-                            } else {
-                                handlerMainThread.post(this::enableStart);
-                            }
-                        }));
-    }
-
-    public void unsubscribeFromSteps() {
-        if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
-            currentRoundSubscription.unsubscribe();
         }
+        return resultsCount;
     }
 }
