@@ -1,6 +1,7 @@
 package com.test.pedometer.data.sensors;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Pair;
 
@@ -28,6 +29,7 @@ public class StepDetectorTestRunner {
     private BehaviorSubject<Integer> currentRound = BehaviorSubject.create(0);
     private BehaviorSubject<Boolean> isRunning = BehaviorSubject.create(false);
     private Subscription testSubscription = Subscriptions.empty();
+    private BehaviorSubject<Void> roundTick = BehaviorSubject.create();
 
     private StepDetectorTestRunner(Context context) {
         settingsManager = SettingsManager.getInstance(context);
@@ -51,71 +53,78 @@ public class StepDetectorTestRunner {
         final int roundsN = settingsManager.getRounds();
         final int stepsN = settingsManager.getSteps();
         isRunning.onNext(true);
-        testSubscription =
-                Observable.fromCallable(() -> {
-                    startSpeak(pocket);
-                    return null;
-                })
-                        .concatMap(o -> Observable.merge(Observable.just(1),
-                                Observable.range(2, settingsManager.getRounds() - 1)
-                                        .concatMap(i -> Observable.just(i).delay(delay, TimeUnit.SECONDS))
-                        ))
-                        .concatMap(round ->   Observable.fromCallable(() -> {
-                            currentRound.onNext(round);
-                            startRoundSpeak(round, stepsN);
-                            return round;
-
-                        }))
-                        .concatMap(round -> stepResults(delay)
-                                .map(resultPair -> {
-                                    pedometerController.reset();
-                                    return getStepResultString(pocket, round, resultPair.first, resultPair.second);
-                                }))
-                        .concatMap(s ->   Observable.fromCallable(() ->  {
-                            stopSpeak(roundsN);
-                            return s;
-                        }))
-                        .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
-                        .subscribeOn(Schedulers.io())
-                        .doOnCompleted(this::emitFinish)
-                        .subscribe(loggerController::logPedometerData);
+        testSubscription = startSpeak(pocket)
+                .concatMap(o -> roundsIntervals())
+                .concatMap(round -> roundSpeak(stepsN, round))
+                .concatMap(round -> stepResults(delay)
+                        .map(resultPair -> getStepResultString(pocket, round, resultPair.first, resultPair.second))
+                        .concatMap(s -> stopSpeak(roundsN, s)))
+                .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
+                .subscribeOn(Schedulers.io())
+                .doOnCompleted(this::emitFinish)
+                .subscribe(loggerController::logPedometerData);
     }
 
-    private void startSpeak(String pocket) throws InterruptedException {
-        String message;
-        if (pocket.toLowerCase().contains("looking")) {
-            message = "walk while looking at your phone";
-        } else {
-            message = "put your phone in your " + pocket;
-        }
-        speaker.speak(message);
-        Thread.sleep(8000);
+    @NonNull
+    private Observable<String> stopSpeak(int roundsN, String s) {
+        return Observable.fromCallable(() -> {
+            pedometerController.reset();
+
+            if (currentRound.getValue() < roundsN) {
+                speaker.speak("stop");
+            } else {
+                speaker.speak("done with all rounds");
+            }
+            Thread.sleep(1000);
+            roundTick.onNext(null);
+            return s;
+        });
     }
 
-    private void startRoundSpeak(int round, int stepsToTake) throws InterruptedException {
-        speaker.speak(String.format("Round %d. When you hear the word Go, take %d steps",
-                round,
-                stepsToTake));
-        Thread.sleep(4000);
-        speaker.speak("Ready.");
-        Thread.sleep(1000);
-        speaker.speak("set");
-        Thread.sleep(1000);
-        speaker.speak("go");
-        Thread.sleep(500);
+    @NonNull
+    private Observable<Integer> roundSpeak(int stepsN, Integer round) {
+        return Observable.fromCallable(() -> {
+            currentRound.onNext(round);
+            speaker.speak(String.format("Round %d. When you hear the word Go, take %d steps",
+                    round,
+                    stepsN));
+            Thread.sleep(4000);
+            speaker.speak("Ready.");
+            Thread.sleep(1000);
+            speaker.speak("set");
+            Thread.sleep(1000);
+            speaker.speak("go");
+            Thread.sleep(500);
+            return round;
+
+        });
     }
 
-    private void stopSpeak(int nRounds) {
-        if (currentRound.getValue() < nRounds) {
-            speaker.speak("stop");
-        } else {
-            speaker.speak("done with all rounds");
-        }
+    private Observable<Integer> roundsIntervals() {
+        return Observable.merge(
+                Observable.just(1),
+                Observable.zip(Observable.range(2, settingsManager.getRounds() - 1), roundTick,
+                        (integer, aBoolean) -> integer));
+    }
+
+    private Observable<String> startSpeak(String pocket) {
+        return Observable.fromCallable(() -> {
+            startSpeak(pocket);
+
+            String message;
+            if (pocket.toLowerCase().contains("looking")) {
+                message = "walk while looking at your phone";
+            } else {
+                message = "put your phone in your " + pocket;
+            }
+            speaker.speak(message);
+            Thread.sleep(8000);
+            return null;
+        });
     }
 
     private void emitFinish() {
         isRunning.onNext(false);
-        currentRound.onNext(0);
     }
 
     private Observable<Pair<Integer, Integer>> stepResults(Integer delay) {
