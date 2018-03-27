@@ -7,8 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.test.pedometer.ui.settings.SettingsFragment;
-import com.test.pedometer.ui.settings.SettingsView;
+import com.test.pedometer.ui.setting.SettingsFragment;
+import com.test.pedometer.ui.setting.SettingsView;
 import com.test.pedometer.ui.steps.StepsFragment;
 import com.test.pedometer.ui.tts.SpeakManager;
 
