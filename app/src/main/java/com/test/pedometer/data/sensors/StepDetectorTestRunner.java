@@ -18,11 +18,11 @@ import rx.subscriptions.Subscriptions;
 
 public class StepDetectorTestRunner {
     private static String TAG = "StepDetectorTestRunner";
+    private static StepDetectorTestRunner INSTANCE;
     private final SettingsManager settingsManager;
     private final PedometerController pedometerController;
     private final FileLoggerController loggerController;
     private final String resultLogString;
-    private static StepDetectorTestRunner INSTANCE;
     private BehaviorSubject<Integer> currentRound = BehaviorSubject.create(0);
     private BehaviorSubject<Boolean> isRunning = BehaviorSubject.create(false);
     private Subscription testSubscription = Subscriptions.empty();
@@ -105,6 +105,12 @@ public class StepDetectorTestRunner {
     }
 
     private String getStepResultString(String pocket, int round, int stepCounter, int stepDetector) {
-        return String.format(resultLogString, pocket, round, settingsManager.getRounds(), stepCounter, stepDetector);
+        return String.format(resultLogString,
+                pocket.toLowerCase(),
+                round,
+                settingsManager.getRounds(),
+                settingsManager.getSteps(),
+                stepCounter,
+                stepDetector);
     }
 }

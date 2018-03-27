@@ -10,17 +10,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class FileLoggerController {
-    private static final String SPACE = ". ";
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss.SSS");
+    private static final String SPACE = ",";
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd'T'HH-mm-ss");
     private FileLogManager fileLogManager;
 
 
-    public static FileLoggerController newInstance(Context context) {
-        return new FileLoggerController(context);
-    }
-
     private FileLoggerController(Context context) {
         fileLogManager = FileLogManager.getInstance(context);
+    }
+
+    public static FileLoggerController newInstance(Context context) {
+        return new FileLoggerController(context);
     }
 
     public void logPedometerData(String data) {
