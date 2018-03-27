@@ -14,6 +14,7 @@ public class SpeakManager {
         textToSpeech =  new TextToSpeech(context, status -> {
             if (status != TextToSpeech.ERROR){
                 textToSpeech.setLanguage(Locale.US);
+                textToSpeech.setPitch(0.8f);
             }
             else {
                 Log.e("SpeakManager", "Error while init TextToSpeech");

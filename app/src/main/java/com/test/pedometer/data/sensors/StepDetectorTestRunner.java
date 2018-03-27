@@ -89,14 +89,14 @@ public class StepDetectorTestRunner {
             message = "put your phone in your " + pocket;
         }
         speaker.speak(message);
-        Thread.sleep(3000);
+        Thread.sleep(8000);
     }
 
     private void startRoundSpeak(int round, int stepsToTake) throws InterruptedException {
         speaker.speak(String.format("Round %d. When you hear the word Go, take %d steps",
                 round,
                 stepsToTake));
-        Thread.sleep(8000);
+        Thread.sleep(4000);
         speaker.speak("Ready.");
         Thread.sleep(1000);
         speaker.speak("set");
