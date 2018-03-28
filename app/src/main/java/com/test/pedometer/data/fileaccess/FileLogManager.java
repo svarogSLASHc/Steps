@@ -18,9 +18,11 @@ public class FileLogManager {
     private static final String NEW_LINE = "\n";
     private static FileLogManager INSTANCE;
     private final Context context;
+    private final StringBuilder builder;
 
     private FileLogManager(Context context) {
         this.context = context;
+        builder = new StringBuilder();
     }
 
     public static FileLogManager getInstance(Context context) {
@@ -32,9 +34,8 @@ public class FileLogManager {
 
     public void log(String logText) {
         Log.d(TAG, logText);
-        writeBufferToFile(new StringBuilder(logText)
-                .append(NEW_LINE)
-                .toString());
+        builder.append(logText)
+                .append(NEW_LINE);
     }
 
     public File getLogFile() throws FileNotFoundException {
@@ -72,8 +73,14 @@ public class FileLogManager {
         return ret;
     }
 
+    public void saveLog() {
+      writeBufferToFile(builder.toString());
+      builder.setLength(0);
+    }
+
     public void clear() {
         getFile().delete();
+        builder.setLength(0);
     }
 
     private void writeBufferToFile(String text) {

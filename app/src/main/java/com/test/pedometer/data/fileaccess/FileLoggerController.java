@@ -34,6 +34,10 @@ public class FileLoggerController {
                         .toString());
     }
 
+    public void saveLog(){
+        fileLogManager.saveLog();
+    }
+
     public File getLogFile() throws FileNotFoundException {
         return fileLogManager.getLogFile();
     }

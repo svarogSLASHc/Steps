@@ -6,19 +6,16 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.test.pedometer.data.sensors.StepDetectorTestRunner;
-import com.test.pedometer.ui.tts.SpeakManager;
 
 public class FStepService extends Service {
     private static String TAG = "FStepService";
     private StepDetectorTestRunner stepDetectorTestRunner;
-    private SpeakManager speakManager;
 
     @Override
     public void onCreate() {
         Log.v(TAG, "Creating the service");
         super.onCreate();
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(this.getApplicationContext());
-        speakManager = SpeakManager.getInstance(getApplicationContext());
     }
 
     @Override

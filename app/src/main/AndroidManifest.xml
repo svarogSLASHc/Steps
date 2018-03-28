@@ -29,7 +29,8 @@
         </activity>
         <service
             android:name=".ui.service.FStepService"
-            android:label="FStep service" />
+            android:label="FStep service"
+            android:stopWithTask="true"/>
     </application>
 
 </manifest>

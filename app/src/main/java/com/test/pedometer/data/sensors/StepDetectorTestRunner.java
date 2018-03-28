@@ -61,8 +61,9 @@ public class StepDetectorTestRunner {
                         .concatMap(s -> stopSpeak(roundsN, s)))
                 .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
                 .subscribeOn(Schedulers.io())
-                .doOnCompleted(this::emitFinish)
-                .subscribe(loggerController::logPedometerData);
+                .subscribe(loggerController::logPedometerData,
+                        throwable -> {},
+                        this::handleComplete);
     }
 
     @NonNull
@@ -123,7 +124,8 @@ public class StepDetectorTestRunner {
         });
     }
 
-    private void emitFinish() {
+    private void handleComplete() {
+        loggerController.saveLog();
         isRunning.onNext(false);
     }
 

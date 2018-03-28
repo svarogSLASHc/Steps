@@ -70,4 +70,14 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
     public void onSaveClicked() {
         backToMainScreen();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }
