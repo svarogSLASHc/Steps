@@ -25,4 +25,10 @@ public interface StepsView extends BaseView {
     void testIsRunning();
 
     void testIsFinished();
+
+    interface StartListener{
+        void onTestStart();
+
+        void onTestStop();
+    }
 }

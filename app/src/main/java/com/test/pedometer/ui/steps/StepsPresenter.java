@@ -70,6 +70,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     public void deleteClick() {
         stepDetectorTestRunner.deleteLog();
         enableStart();
+        view.showSuccess("Data was successfully deleted");
     }
 
     public void startClick() {

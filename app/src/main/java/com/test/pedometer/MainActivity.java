@@ -10,10 +10,11 @@ import android.view.MenuItem;
 import com.test.pedometer.ui.setting.SettingsFragment;
 import com.test.pedometer.ui.setting.SettingsView;
 import com.test.pedometer.ui.steps.StepsFragment;
+import com.test.pedometer.ui.steps.StepsView;
 import com.test.pedometer.ui.tts.SpeakManager;
 
-public class MainActivity extends AppCompatActivity implements SettingsView.SaveListener {
-
+public class MainActivity extends AppCompatActivity implements SettingsView.SaveListener, StepsView.StartListener {
+    private boolean settings_enabled = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +35,9 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                loadFragment(SettingsFragment.getInstance());
+                if (settings_enabled){
+                    loadFragment(SettingsFragment.getInstance());
+                }
                 return true;
             case android.R.id.home:
                 backToMainScreen();
@@ -72,12 +75,12 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    public void onTestStart() {
+        settings_enabled = false;
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onTestStop() {
+        settings_enabled = true;
     }
 }

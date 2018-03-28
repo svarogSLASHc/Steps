@@ -1,5 +1,6 @@
 package com.test.pedometer.ui.steps;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,6 +38,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     View delete;
     private PocketAdapter pocketAdapter;
     private StepsPresenter presenter;
+    private StartListener startListener;
 
     public static StepsFragment getInstance() {
         return new StepsFragment();
@@ -58,6 +60,14 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         presenter.deleteClick();
         getActivity().stopService(new Intent(getContext(), FStepService.class));
         clearUI();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof StartListener){
+            startListener = (StartListener) context;
+        }
     }
 
     @Override
@@ -171,6 +181,14 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     private void switchStartState(boolean enabled) {
         start.setEnabled(enabled);
+        if (startListener != null){
+            if (enabled){
+                startListener.onTestStop();
+            }
+            else {
+                startListener.onTestStart();
+            }
+        }
     }
 
     private void showMsg(String msg) {
