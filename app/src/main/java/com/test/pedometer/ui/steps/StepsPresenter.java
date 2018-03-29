@@ -57,10 +57,10 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                         handlerMainThread.post(() -> view.showError(throwable.getMessage()));
                         return Observable.just("");
                     })
-                    .subscribe(s -> {
-                        handlerMainThread.post(() -> view.showSuccess(s + "\nUploaded " + finalResultsCount + " results"));
-                        deleteClick();
-                    });
+                    .subscribe(s -> handlerMainThread.post(() -> {
+                        deleteLog();
+                        view.showSuccess(s + "\nUploaded " + finalResultsCount + " results");
+                    }));
 
         } catch (FileNotFoundException e) {
             view.showError(e.getMessage());
@@ -68,9 +68,13 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     }
 
     public void deleteClick() {
+        deleteLog();
+        view.showSuccess("Data was successfully deleted");
+    }
+
+    private void deleteLog() {
         stepDetectorTestRunner.deleteLog();
         enableStart();
-        view.showSuccess("Data was successfully deleted");
     }
 
     public void startClick() {
