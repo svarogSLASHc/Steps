@@ -16,6 +16,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 import rx.subscriptions.Subscriptions;
 
 public class StepDetectorTestRunner {
@@ -29,7 +30,7 @@ public class StepDetectorTestRunner {
     private BehaviorSubject<Integer> currentRound = BehaviorSubject.create(0);
     private BehaviorSubject<Boolean> isRunning = BehaviorSubject.create(false);
     private Subscription testSubscription = Subscriptions.empty();
-    private BehaviorSubject<Void> roundTick = BehaviorSubject.create();
+    private PublishSubject<Void> roundTick = PublishSubject.create();
 
     private StepDetectorTestRunner(Context context) {
         settingsManager = SettingsManager.getInstance(context);
@@ -48,6 +49,7 @@ public class StepDetectorTestRunner {
 
     public void start() {
         pedometerController.reset();
+        stop();
         final String pocket = settingsManager.getPocket();
         final int delay = settingsManager.getRoundTime();
         final int roundsN = settingsManager.getRounds();
