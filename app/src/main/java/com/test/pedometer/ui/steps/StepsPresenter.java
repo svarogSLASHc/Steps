@@ -103,7 +103,8 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     @NonNull
     private Observable<? extends String> handleUploadError(Throwable throwable) {
         String errorMsg;
-        if (throwable instanceof com.android.volley.TimeoutError) {
+        if (throwable instanceof com.android.volley.TimeoutError |
+                throwable instanceof com.android.volley.NoConnectionError) {
             errorMsg = view.getContext().getString(R.string.error_msg_timeout);
         } else {
             errorMsg = throwable.getMessage();
