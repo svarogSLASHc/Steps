@@ -2,6 +2,7 @@ package com.test.pedometer.ui.steps;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 
 import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
@@ -22,6 +23,7 @@ import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 public class StepsPresenter extends BasePresenter<StepsView> {
+    private static final String UPLOAD_ERROR = "UPLOAD_ERROR";
     private final StepDetectorTestRunner stepDetectorTestRunner;
     private final SettingsManager settingsManager;
     private FileLoggerController fileLog;
@@ -53,10 +55,8 @@ public class StepsPresenter extends BasePresenter<StepsView> {
             NetworkController.getInstance(view.getContext())
                     .uploadResults(fileLog.getLogFileAsString())
                     .subscribeOn(Schedulers.io())
-                    .onErrorResumeNext(throwable -> {
-                        handlerMainThread.post(() -> view.showError(throwable.getMessage()));
-                        return Observable.just("");
-                    })
+                    .onErrorResumeNext(this::handleUploadError)
+                    .filter(response -> !UPLOAD_ERROR.equals(response))
                     .subscribe(s -> handlerMainThread.post(() -> {
                         deleteLog();
                         view.showSuccess(s + "\nUploaded " + finalResultsCount + " results");
@@ -70,11 +70,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     public void deleteClick() {
         deleteLog();
         view.showSuccess("Data was successfully deleted");
-    }
-
-    private void deleteLog() {
-        stepDetectorTestRunner.deleteLog();
-        enableStart();
     }
 
     public void startClick() {
@@ -103,6 +98,23 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
             currentRoundSubscription.unsubscribe();
         }
+    }
+
+    @NonNull
+    private Observable<? extends String> handleUploadError(Throwable throwable) {
+        String errorMsg;
+        if (throwable instanceof com.android.volley.TimeoutError) {
+            errorMsg = view.getContext().getString(R.string.error_msg_timeout);
+        } else {
+            errorMsg = throwable.getMessage();
+        }
+        handlerMainThread.post(() -> view.showError(errorMsg));
+        return Observable.just(UPLOAD_ERROR);
+    }
+
+    private void deleteLog() {
+        stepDetectorTestRunner.deleteLog();
+        enableStart();
     }
 
     private void setPockets(String current) {

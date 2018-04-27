@@ -24,4 +24,5 @@
     </array>
     <string name="nothing">Nothing to upload</string>
     <string name="init_round_value">0</string>
+    <string name="error_msg_timeout">Server could not be reached.\nPlease check connection and try again</string>
 </resources>
