@@ -5,14 +5,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.test.pedometer.domain.StepCountListener;
 import com.test.pedometer.domain.StepDetectorListener;
-
-import java.util.ArrayList;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -36,11 +32,11 @@ public class PedometerManager implements SensorEventListener {
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         // Batching for the step counter doesn't make sense (the buffer holds
         // just one step counter event anyway, as it's not a continuous event)
-        mSensorManager.registerListener(this, mStepCounter, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mStepCounter, SensorManager.SENSOR_DELAY_FASTEST);
 
         // We do instead use batching for the step detector sensor
         final int reportInterval = calcSensorReportInterval(mStepDetector);
-        mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_NORMAL,
+        mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_FASTEST,
                 reportInterval * 1000 /*  micro seconds */);
     }
 
