@@ -137,10 +137,10 @@ public class StepDetectorTestRunner {
                 pedometerController.registerCounterListener(subscriber::onNext))
                 .doOnNext(integer -> addToLog("Registered step: " + integer))
                 .buffer(delay, TimeUnit.SECONDS)
-                .flatMapIterable(integers -> integers)
-                .reduce((integer, integer2) -> integer + integer2)
-                .doOnNext(integer -> addToLog("Round value: " + integer))
-                .take(1);
+                .take(1)
+                .flatMap(Observable::from)
+                .reduce(0, (integer, integer2) -> integer + integer2)
+                .doOnNext(integer -> addToLog("Round value: " + integer));
     }
 
     private void addToLog(String s) {

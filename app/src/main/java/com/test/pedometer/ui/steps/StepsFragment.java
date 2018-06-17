@@ -49,7 +49,6 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     @OnClick(R.id.start)
     void startClick() {
-        presenter.startClick();
         getActivity().startService(new Intent(getContext(), FStepService.class));
     }
 

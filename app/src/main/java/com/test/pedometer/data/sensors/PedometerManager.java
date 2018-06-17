@@ -15,10 +15,8 @@ import static android.content.Context.SENSOR_SERVICE;
 
 public class PedometerManager implements SensorEventListener {
     private static String TAG = "PedometerManager";
-    private final static long MICROSECONDS_IN_ONE_MINUTE = 60000000;
     private SensorManager sensorManager;
     private StepCountListener stepCountListener;
-    private Sensor stepCounter;
     private int lastCount = -1;
 
     public static PedometerManager getInstance(Context context) {
@@ -27,8 +25,11 @@ public class PedometerManager implements SensorEventListener {
 
     private PedometerManager(Context context) {
         sensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
-        stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        final Sensor stepCounter = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         sensorManager.registerListener(this, stepCounter, SensorManager.SENSOR_DELAY_UI,(int) TimeUnit.SECONDS.toMicros(10));
+        final Sensor stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_UI,(int) TimeUnit.SECONDS.toMicros(10));
+
     }
 
     @Override
@@ -44,6 +45,8 @@ public class PedometerManager implements SensorEventListener {
             Log.v(TAG, "Events count:" + event.values.length);
             postSensorChange(stepsRegistered);
             lastCount = (int) event.values[0];
+        }else if (type ==  Sensor.TYPE_STEP_DETECTOR){
+            Log.v(TAG, "Detector events count:" + event.values.length);
         }
     }
 

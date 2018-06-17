@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
-import rx.Subscription;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.Subscriptions;
 
 public class StepsPresenter extends BasePresenter<StepsView> {
@@ -27,7 +27,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private final StepDetectorTestRunner stepDetectorTestRunner;
     private final SettingsManager settingsManager;
     private FileLoggerController fileLog;
-    private Subscription currentRoundSubscription = Subscriptions.empty();
+    private CompositeSubscription currentRoundSubscription;
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
     private final FileLoggerController loggerController;
 
@@ -74,10 +74,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         view.showSuccess("Data was successfully deleted");
     }
 
-    public void startClick() {
-        subscribeOnSteps();
-    }
-
     public void subscribeOnSteps() {
         currentRoundSubscription = Subscriptions.from(
                 stepDetectorTestRunner
@@ -94,13 +90,17 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                                 enableStart();
                             }
                         }),
-                stepDetectorTestRunner.logs().subscribe(s -> handlerMainThread.post(() ->  view.showStepResult(s)))
+                stepDetectorTestRunner.logs().subscribe(s ->
+                        handlerMainThread.post(() ->
+                                view.showStepResult(s))
+                )
         );
     }
 
     public void unsubscribeFromSteps() {
         if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
             currentRoundSubscription.unsubscribe();
+            currentRoundSubscription = null;
         }
     }
 
