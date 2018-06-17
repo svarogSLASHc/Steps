@@ -2,6 +2,7 @@ package com.test.pedometer.ui.steps;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -36,6 +37,8 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     View send;
     @BindView(R.id.delete)
     View delete;
+    @BindView(R.id.textView_log)
+    TextView log;
     private PocketAdapter pocketAdapter;
     private StepsPresenter presenter;
     private StartListener startListener;
@@ -65,7 +68,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof StartListener){
+        if (context instanceof StartListener) {
             startListener = (StartListener) context;
         }
     }
@@ -87,6 +90,17 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         initList();
         presenter = new StepsPresenter(this);
         presenter.onViewCreated();
+        log.setOnClickListener(v -> presenter.getLogInternal());
+        log.setOnLongClickListener(v -> {
+            new android.app.AlertDialog.Builder(getActivity())
+                    .setCancelable(true)
+                    .setTitle("Delete log?")
+                    .setMessage(log.getText())
+                    .setPositiveButton("Really?", (dialog, which) -> clearLog())
+                    .show();
+
+            return false;
+        });
         clearUI();
         disableDelete();
     }
@@ -122,6 +136,19 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     }
 
     @Override
+    public void showStepResult(String msg) {
+        if (msg.contains("Register")){
+            log.setText(log.getText() + msg + "\n");
+        }
+        else {
+            new AlertDialog.Builder(getContext())
+                    .setMessage(msg)
+                    .setTitle("Step result")
+                    .show();
+        }
+    }
+
+    @Override
     public void disableDelete() {
         switchDeleteState(false);
     }
@@ -141,6 +168,16 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     public void testIsFinished() {
         switchDeleteState(true);
         switchStartState(false);
+    }
+
+    @Override
+    public void showLog(String msg) {
+        log.setText(msg);
+    }
+
+    private void clearLog() {
+        presenter.clearLogInternal();
+        log.setText("");
     }
 
     @Override
@@ -172,6 +209,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     private void clearUI() {
         currentRound.setText(R.string.init_round_value);
+        log.setText("");
     }
 
     private void switchDeleteState(boolean enabled) {
@@ -181,11 +219,10 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     private void switchStartState(boolean enabled) {
         start.setEnabled(enabled);
-        if (startListener != null){
-            if (enabled){
+        if (startListener != null) {
+            if (enabled) {
                 startListener.onTestStop();
-            }
-            else {
+            } else {
                 startListener.onTestStart();
             }
         }

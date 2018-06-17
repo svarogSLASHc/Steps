@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 import com.test.pedometer.ui.setting.SettingsFragment;
 import com.test.pedometer.ui.setting.SettingsView;
 import com.test.pedometer.ui.steps.StepsFragment;
@@ -19,17 +20,16 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StepDetectorTestRunner.getInstance(this);
         loadFirstFragment();
         SpeakManager.getInstance(this);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements SettingsView.Save
             default:
 
                 return super.onOptionsItemSelected(item);
-
         }
     }
 

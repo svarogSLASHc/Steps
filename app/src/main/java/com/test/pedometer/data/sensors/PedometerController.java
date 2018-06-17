@@ -3,7 +3,6 @@ package com.test.pedometer.data.sensors;
 import android.content.Context;
 
 import com.test.pedometer.domain.StepCountListener;
-import com.test.pedometer.domain.StepDetectorListener;
 
 public class PedometerController {
     private static PedometerController INSTANCE;
@@ -22,10 +21,6 @@ public class PedometerController {
 
     public void registerCounterListener(StepCountListener listener) {
         pedometerManager.registerStepListener(listener);
-    }
-
-    public void registerDetectorListener(StepDetectorListener listener) {
-        pedometerManager.registerStepDetectorListener(listener);
     }
 
     public void reset() {

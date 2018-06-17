@@ -18,6 +18,8 @@ public interface StepsView extends BaseView {
 
     void showSuccess(String msg);
 
+    void showStepResult(String msg);
+
     void disableDelete();
 
     void enableStart();
@@ -25,6 +27,8 @@ public interface StepsView extends BaseView {
     void testIsRunning();
 
     void testIsFinished();
+
+    void showLog(String msg);
 
     interface StartListener{
         void onTestStart();

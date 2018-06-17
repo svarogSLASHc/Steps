@@ -29,12 +29,14 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private FileLoggerController fileLog;
     private Subscription currentRoundSubscription = Subscriptions.empty();
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
+    private final FileLoggerController loggerController;
 
     protected StepsPresenter(StepsView view) {
         super(view);
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(view.getContext().getApplicationContext());
         fileLog = FileLoggerController.newInstance(view.getContext());
         settingsManager = SettingsManager.getInstance(view.getContext());
+        loggerController = FileLoggerController.newInstance(view.getContext());
     }
 
     @Override
@@ -91,7 +93,9 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                             } else {
                                 enableStart();
                             }
-                        }));
+                        }),
+                stepDetectorTestRunner.logs().subscribe(s -> handlerMainThread.post(() ->  view.showStepResult(s)))
+        );
     }
 
     public void unsubscribeFromSteps() {
@@ -153,5 +157,15 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
         }
         return resultsCount;
+    }
+
+
+
+    public void getLogInternal() {
+        view.showLog(loggerController.getLogInternal());
+    }
+
+    public void clearLogInternal() {
+        loggerController.clearLogInternal();
     }
 }

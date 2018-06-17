@@ -34,8 +34,8 @@ public class FileLoggerController {
                         .toString());
     }
 
-    public void saveLog(){
-        fileLogManager.saveLog();
+    public String saveLog(){
+        return fileLogManager.saveLog();
     }
 
     public File getLogFile() throws FileNotFoundException {
@@ -48,5 +48,17 @@ public class FileLoggerController {
 
     public void clear() {
         fileLogManager.clear();
+    }
+
+    public void logInternal(String msg) {
+        fileLogManager.logToInternal(msg);
+    }
+
+    public String getLogInternal() {
+        return fileLogManager.getToInternal();
+    }
+
+    public void clearLogInternal() {
+        fileLogManager.clearInternal();
     }
 }

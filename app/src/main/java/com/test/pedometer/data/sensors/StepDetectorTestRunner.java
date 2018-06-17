@@ -3,7 +3,6 @@ package com.test.pedometer.data.sensors;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.util.Pair;
 
 import com.test.pedometer.R;
 import com.test.pedometer.data.fileaccess.FileLoggerController;
@@ -31,6 +30,7 @@ public class StepDetectorTestRunner {
     private BehaviorSubject<Boolean> isRunning = BehaviorSubject.create(false);
     private Subscription testSubscription = Subscriptions.empty();
     private PublishSubject<Void> roundTick = PublishSubject.create();
+    private PublishSubject<String> logEvent = PublishSubject.create();
 
     private StepDetectorTestRunner(Context context) {
         settingsManager = SettingsManager.getInstance(context);
@@ -59,12 +59,13 @@ public class StepDetectorTestRunner {
                 .concatMap(o -> roundsIntervals())
                 .concatMap(round -> roundSpeak(stepsN, round))
                 .concatMap(round -> stepResults(delay)
-                        .map(resultPair -> getStepResultString(pocket, round, resultPair.first, resultPair.second))
+                        .map(steps -> getStepResultString(pocket, round, steps))
                         .concatMap(s -> stopSpeak(roundsN, s)))
                 .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
                 .subscribeOn(Schedulers.io())
                 .subscribe(loggerController::logPedometerData,
-                        throwable -> {},
+                        throwable -> {
+                        },
                         this::handleComplete);
     }
 
@@ -127,30 +128,36 @@ public class StepDetectorTestRunner {
     }
 
     private void handleComplete() {
-        loggerController.saveLog();
+        addToLog(loggerController.saveLog());
         isRunning.onNext(false);
     }
 
-    private Observable<Pair<Integer, Integer>> stepResults(Integer delay) {
-        return Observable.combineLatest(
-                Observable.<Integer>create(subscriber ->
-                        pedometerController.registerCounterListener(subscriber::onNext))
-                        .buffer(delay, TimeUnit.SECONDS)
-                        .map(integers -> integers.isEmpty() ? 0 : integers.get(integers.size() - 1))
-                        .doOnNext(integer -> Log.v(TAG, "CounterListener. Value: " + integer)),
-                Observable.<Integer>create(subscriber ->
-                        pedometerController.registerDetectorListener(subscriber::onNext))
-                        .buffer(delay, TimeUnit.SECONDS)
-                        .map(integers -> integers.isEmpty() ? 0 : integers.get(integers.size() - 1))
-                        .doOnNext(integer -> Log.v(TAG, "DetectorListener. Value: " + integer)),
-                Pair::create)
+    private Observable<Integer> stepResults(Integer delay) {
+        return Observable.<Integer>create(subscriber ->
+                pedometerController.registerCounterListener(subscriber::onNext))
+                .doOnNext(integer -> addToLog("Registered step: " + integer))
+                .buffer(delay, TimeUnit.SECONDS)
+                .flatMapIterable(integers -> integers)
+                .reduce((integer, integer2) -> integer + integer2)
+                .doOnNext(integer -> addToLog("Round value: " + integer))
                 .take(1);
+    }
+
+    private void addToLog(String s) {
+        Log.v(TAG, s);
+        loggerController.logInternal(s);
+        logEvent.onNext(s);
+
     }
 
     public void stop() {
         if (testSubscription != null && !testSubscription.isUnsubscribed()) {
             testSubscription.unsubscribe();
         }
+    }
+
+    public Observable<String> logs() {
+        return logEvent;
     }
 
     public Observable<Boolean> isRunning() {
@@ -165,13 +172,13 @@ public class StepDetectorTestRunner {
         loggerController.clear();
     }
 
-    private String getStepResultString(String pocket, int round, int stepCounter, int stepDetector) {
+
+    private String getStepResultString(String pocket, int round, int stepCounter) {
         return String.format(resultLogString,
                 pocket.toLowerCase(),
                 round,
                 settingsManager.getRounds(),
                 settingsManager.getSteps(),
-                stepCounter,
-                stepDetector);
+                stepCounter);
     }
 }
