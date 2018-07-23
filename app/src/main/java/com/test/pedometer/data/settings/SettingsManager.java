@@ -3,6 +3,8 @@ package com.test.pedometer.data.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.test.pedometer.domain.settings.SettingsFields;
+
 public class SettingsManager implements SettingsFields {
     private static SettingsManager INSTANCE;
     private final SharedPreferences preferences;

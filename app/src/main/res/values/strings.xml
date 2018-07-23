@@ -25,4 +25,7 @@
     <string name="nothing">Nothing to upload</string>
     <string name="init_round_value">0</string>
     <string name="error_msg_timeout">Server could not be reached.\nPlease check connection and try again</string>
+    <string name="unmonitored_title">Add app to unmonitored</string>
+    <string name="unmonitored_msg">You are using Samsung device. To improve app stability we recommend you to add app to unmonitored list</string>
+    <string name="samsung_labeel">Add to unmonitored list</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.test.pedometer.data.settings;
+package com.test.pedometer.domain.settings;
 
 public interface SettingsFields {
     String SHARED_NAME = "SETTINGS";
