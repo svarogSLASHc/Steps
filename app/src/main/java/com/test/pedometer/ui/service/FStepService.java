@@ -65,8 +65,6 @@ public class FStepService extends Service {
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-//        NotificationManagerCompat.from(this)
-//                .notify(NOTIFICATION_ID, builder.build());
         startForeground(NOTIFICATION_ID, builder.build());
     }
 
