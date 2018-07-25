@@ -7,13 +7,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import com.test.pedometer.domain.StepCountListener;
+import com.test.pedometer.domain.pedometer.PedometerRepository;
+import com.test.pedometer.domain.pedometer.StepCountListener;
 
 import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.SENSOR_SERVICE;
 
-public class PedometerManager implements SensorEventListener {
+public class PedometerManager implements PedometerRepository, SensorEventListener {
     private static String TAG = "PedometerManager";
     private SensorManager sensorManager;
     private StepCountListener stepCountListener;
@@ -50,10 +51,12 @@ public class PedometerManager implements SensorEventListener {
         }
     }
 
+    @Override
     public void registerStepListener(StepCountListener listener) {
         this.stepCountListener = listener;
     }
 
+    @Override
     public void onDestroy() {
         sensorManager.unregisterListener(this);
     }
@@ -63,6 +66,7 @@ public class PedometerManager implements SensorEventListener {
         Log.v(TAG, "onAccuracyChanged:" + accuracy);
     }
 
+    @Override
     public void reset() {
         lastCount =  -1;
     }

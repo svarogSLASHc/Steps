@@ -5,8 +5,10 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.test.pedometer.R;
-import com.test.pedometer.data.fileaccess.FileLoggerController;
+import com.test.pedometer.StepApplication;
 import com.test.pedometer.data.settings.SettingsManager;
+import com.test.pedometer.domain.fileaccess.PedometerLoggerController;
+import com.test.pedometer.domain.pedometer.PedometerRunnerController;
 import com.test.pedometer.ui.tts.SpeakManager;
 
 import java.util.concurrent.TimeUnit;
@@ -22,8 +24,8 @@ public class StepDetectorTestRunner {
     private static String TAG = "StepDetectorTestRunner";
     private static StepDetectorTestRunner INSTANCE;
     private final SettingsManager settingsManager;
-    private final PedometerController pedometerController;
-    private final FileLoggerController loggerController;
+    private final PedometerRunnerController pedometerController;
+    private final PedometerLoggerController pedometerLogger;
     private final String resultLogString;
     private final SpeakManager speaker;
     private BehaviorSubject<Integer> currentRound = BehaviorSubject.create(0);
@@ -34,8 +36,8 @@ public class StepDetectorTestRunner {
 
     private StepDetectorTestRunner(Context context) {
         settingsManager = SettingsManager.getInstance(context);
-        pedometerController = PedometerController.getInstance(context);
-        loggerController = FileLoggerController.newInstance(context);
+        pedometerController = StepApplication.getInstance(context).getObjectInstances().getPedometerController();
+        pedometerLogger = PedometerLoggerController.getInstance(context);
         resultLogString = context.getString(R.string.step_counter_result);
         speaker = SpeakManager.getInstance(context);
     }
@@ -63,7 +65,7 @@ public class StepDetectorTestRunner {
                         .concatMap(s -> stopSpeak(roundsN, s)))
                 .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
                 .subscribeOn(Schedulers.io())
-                .subscribe(loggerController::logPedometerData,
+                .subscribe(pedometerLogger::add,
                         throwable -> {
                         },
                         this::handleComplete);
@@ -128,7 +130,7 @@ public class StepDetectorTestRunner {
     }
 
     private void handleComplete() {
-        addToLog(loggerController.saveLog());
+        addToLog(pedometerLogger.saveLog());
         isRunning.onNext(false);
     }
 
@@ -145,7 +147,6 @@ public class StepDetectorTestRunner {
 
     private void addToLog(String s) {
         Log.v(TAG, s);
-        loggerController.logInternal(s);
         logEvent.onNext(s);
 
     }
@@ -169,7 +170,7 @@ public class StepDetectorTestRunner {
     }
 
     public void deleteLog() {
-        loggerController.clear();
+        pedometerLogger.clear();
     }
 
 

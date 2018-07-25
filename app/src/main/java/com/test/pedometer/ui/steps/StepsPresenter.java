@@ -7,13 +7,13 @@ import android.support.annotation.NonNull;
 import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
-import com.test.pedometer.data.fileaccess.FileLoggerController;
 import com.test.pedometer.data.network.NetworkController;
 import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 import com.test.pedometer.data.settings.SettingsManager;
+import com.test.pedometer.domain.fileaccess.DebugLoggerController;
+import com.test.pedometer.domain.fileaccess.PedometerLoggerController;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,17 +26,17 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private static final String UPLOAD_ERROR = "UPLOAD_ERROR";
     private final StepDetectorTestRunner stepDetectorTestRunner;
     private final SettingsManager settingsManager;
-    private FileLoggerController fileLog;
+    private final DebugLoggerController debugLogger;
     private CompositeSubscription currentRoundSubscription;
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
-    private final FileLoggerController loggerController;
+    private PedometerLoggerController pedometerLogger;
 
     protected StepsPresenter(StepsView view) {
         super(view);
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(view.getContext().getApplicationContext());
-        fileLog = FileLoggerController.newInstance(view.getContext());
+        pedometerLogger = PedometerLoggerController.getInstance(view.getContext());
         settingsManager = SettingsManager.getInstance(view.getContext());
-        loggerController = FileLoggerController.newInstance(view.getContext());
+        debugLogger = DebugLoggerController.getInstance(view.getContext());
     }
 
     @Override
@@ -51,22 +51,16 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     }
 
     public void sendClick() {
-        int resultsCount = getLogSize();
-        try {
-            final int finalResultsCount = resultsCount;
-            NetworkController.getInstance(view.getContext())
-                    .uploadResults(fileLog.getLogFileAsString())
-                    .subscribeOn(Schedulers.io())
-                    .onErrorResumeNext(this::handleUploadError)
-                    .filter(response -> !UPLOAD_ERROR.equals(response))
-                    .subscribe(s -> handlerMainThread.post(() -> {
-                        deleteLog();
-                        view.showSuccess(s + "\nUploaded " + finalResultsCount + " results");
-                    }));
-
-        } catch (FileNotFoundException e) {
-            view.showError(e.getMessage());
-        }
+        final int resultsCount = getLogSize();
+        NetworkController.getInstance(view.getContext())
+                .uploadResults(pedometerLogger.getLogFileAsString())
+                .subscribeOn(Schedulers.io())
+                .onErrorResumeNext(this::handleUploadError)
+                .filter(response -> !UPLOAD_ERROR.equals(response))
+                .subscribe(s -> handlerMainThread.post(() -> {
+                    deleteLog();
+                    view.showSuccess(s + "\nUploaded " + resultsCount + " results");
+                }));
     }
 
     public void deleteClick() {
@@ -91,8 +85,10 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                             }
                         }),
                 stepDetectorTestRunner.logs().subscribe(s ->
-                        handlerMainThread.post(() ->
-                                view.showStepResult(s))
+                        handlerMainThread.post(() -> {
+                            debugLogger.save(s);
+                            view.showStepResult(s);
+                        })
                 )
         );
     }
@@ -147,25 +143,20 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
     private int getLogSize() {
         int resultsCount = 0;
-        try {
-            for (String item : fileLog.getLogFileAsString().split("\n")) {
-                if (!item.isEmpty()) {
-                    resultsCount++;
-                }
+        for (String item : pedometerLogger.getLogFileAsString().split("\n")) {
+            if (!item.isEmpty()) {
+                resultsCount++;
             }
-        } catch (FileNotFoundException e) {
-
         }
         return resultsCount;
     }
 
 
-
     public void getLogInternal() {
-        view.showLog(loggerController.getLogInternal());
+        view.showLog(debugLogger.getLogFileAsString());
     }
 
     public void clearLogInternal() {
-        loggerController.clearLogInternal();
+        debugLogger.clear();
     }
 }
