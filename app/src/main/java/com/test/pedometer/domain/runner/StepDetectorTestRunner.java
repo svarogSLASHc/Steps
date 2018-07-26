@@ -1,14 +1,16 @@
-package com.test.pedometer.data.sensors;
+package com.test.pedometer.domain.runner;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.test.pedometer.R;
 import com.test.pedometer.StepApplication;
+import com.test.pedometer.data.activity_recognition.ActivityRecognitionController;
 import com.test.pedometer.data.settings.SettingsManager;
+import com.test.pedometer.domain.fileaccess.ActivityLoggerController;
 import com.test.pedometer.domain.fileaccess.PedometerLoggerController;
 import com.test.pedometer.domain.pedometer.PedometerRunnerController;
+import com.test.pedometer.ui.acitivty_recognition.UtilsRecognition;
 import com.test.pedometer.ui.tts.SpeakManager;
 
 import java.util.concurrent.TimeUnit;
@@ -26,8 +28,12 @@ public class StepDetectorTestRunner {
     private final SettingsManager settingsManager;
     private final PedometerRunnerController pedometerController;
     private final PedometerLoggerController pedometerLogger;
+    private final ActivityRecognitionController recognitionController;
+    private final ActivityLoggerController activityLogger;
     private final String resultLogString;
+    private final String activityLogString;
     private final SpeakManager speaker;
+    private final Context context;
     private BehaviorSubject<Integer> currentRound = BehaviorSubject.create(0);
     private BehaviorSubject<Boolean> isRunning = BehaviorSubject.create(false);
     private Subscription testSubscription = Subscriptions.empty();
@@ -35,11 +41,15 @@ public class StepDetectorTestRunner {
     private PublishSubject<String> logEvent = PublishSubject.create();
 
     private StepDetectorTestRunner(Context context) {
+        this.context = context;
         settingsManager = SettingsManager.getInstance(context);
         pedometerController = StepApplication.getInstance(context).getObjectInstances().getPedometerController();
         pedometerLogger = PedometerLoggerController.getInstance(context);
         resultLogString = context.getString(R.string.step_counter_result);
+        activityLogString = context.getString(R.string.recognition_format);
         speaker = SpeakManager.getInstance(context);
+        recognitionController = ActivityRecognitionController.getInstance(context);
+        activityLogger = ActivityLoggerController.getInstance(context);
     }
 
     public static StepDetectorTestRunner getInstance(Context context) {
@@ -50,105 +60,73 @@ public class StepDetectorTestRunner {
     }
 
     public void start() {
-        pedometerController.reset();
         stop();
         final String pocket = settingsManager.getPocket();
         final int delay = settingsManager.getRoundTime();
         final int roundsN = settingsManager.getRounds();
         final int stepsN = settingsManager.getSteps();
         isRunning.onNext(true);
-        testSubscription = startSpeak(pocket)
-                .concatMap(o -> roundsIntervals())
-                .concatMap(round -> roundSpeak(stepsN, round))
-                .concatMap(round -> stepResults(delay)
-                        .map(steps -> getStepResultString(pocket, round, steps))
-                        .concatMap(s -> stopSpeak(roundsN, s)))
+        testSubscription = speaker.startSpeak(pocket)
+                .concatMap(o -> roundsIntervals(roundsN))
+                .doOnNext(round -> currentRound.onNext(round))
+                .concatMap(round -> speaker.roundSpeak(stepsN, round))
+                .concatMap(round -> startMeasureMovement(delay, pocket, round)
+                        .concatMap(s -> speaker.stopSpeak(roundsN, round))
+                        .doOnNext(s -> roundTick.onNext(null)))
                 .onErrorResumeNext(throwable -> Observable.just(throwable.getMessage()))
                 .subscribeOn(Schedulers.io())
-                .subscribe(pedometerLogger::add,
+                .subscribe(s -> {
+                        },
                         throwable -> {
                         },
                         this::handleComplete);
     }
 
-    @NonNull
-    private Observable<String> stopSpeak(int roundsN, String s) {
-        return Observable.fromCallable(() -> {
-            pedometerController.reset();
-
-            if (currentRound.getValue() < roundsN) {
-                speaker.speak("stop");
-            } else {
-                speaker.speak("done with all rounds");
-            }
-            Thread.sleep(1000);
-            roundTick.onNext(null);
-            return s;
-        });
+    private Observable<String> startMeasureMovement(int delay, String pocket, int round) {
+        return Observable.zip(
+                getStepsResult(delay, pocket, round),
+                startActivityRecognition(delay), (s1, s2) -> s1)
+                .take(1);
     }
 
-    @NonNull
-    private Observable<Integer> roundSpeak(int stepsN, Integer round) {
-        return Observable.fromCallable(() -> {
-            currentRound.onNext(round);
-            speaker.speak(String.format("Round %d. When you hear the word Go, take %d steps",
-                    round,
-                    stepsN));
-            Thread.sleep(4000);
-            speaker.speak("Ready.");
-            Thread.sleep(1000);
-            speaker.speak("set");
-            Thread.sleep(1000);
-            speaker.speak("go");
-            Thread.sleep(500);
-            return round;
-
-        });
+    private Observable<String> startActivityRecognition(Integer delay) {
+        recognitionController.requestActivityUpdatesButtonHandler();
+        return recognitionController.activitiesObservable()
+                .map(activities -> UtilsRecognition.mapRawActivityToString(context, activityLogString, activities))
+                .buffer(delay, TimeUnit.SECONDS)
+                .take(1)
+                .flatMap(Observable::from)
+                .collect(StringBuilder::new, (builder, s) -> builder.append(s).append("\n"))
+                .map(StringBuilder::toString)
+                .doOnNext(data -> {
+                    activityLogger.add(data);
+                    recognitionController.removeActivityUpdatesButtonHandler();
+                });
     }
 
-    private Observable<Integer> roundsIntervals() {
+    private Observable<String> getStepsResult(Integer delay, String pocket, int round) {
+        return pedometerController.getStepsObservable(delay)
+                .map(steps -> getStepResultString(pocket, round, steps))
+                .map(pedometerLogger::format)
+                .doOnNext(pedometerLogger::add);
+    }
+
+    private Observable<Integer> roundsIntervals(int totalRounds) {
         return Observable.merge(
                 Observable.just(1),
-                Observable.zip(Observable.range(2, settingsManager.getRounds() - 1), roundTick,
+                Observable.zip(Observable.range(2, totalRounds - 1), roundTick,
                         (integer, aBoolean) -> integer));
-    }
-
-    private Observable<String> startSpeak(String pocket) {
-        return Observable.fromCallable(() -> {
-            startSpeak(pocket);
-
-            String message;
-            if (pocket.toLowerCase().contains("looking")) {
-                message = "walk while looking at your phone";
-            } else {
-                message = "put your phone in your " + pocket;
-            }
-            speaker.speak(message);
-            Thread.sleep(8000);
-            return null;
-        });
     }
 
     private void handleComplete() {
         addToLog(pedometerLogger.saveLog());
+        addToLog(activityLogger.saveLog());
         isRunning.onNext(false);
-    }
-
-    private Observable<Integer> stepResults(Integer delay) {
-        return Observable.<Integer>create(subscriber ->
-                pedometerController.registerCounterListener(subscriber::onNext))
-                .doOnNext(integer -> addToLog("Registered step: " + integer))
-                .buffer(delay, TimeUnit.SECONDS)
-                .take(1)
-                .flatMap(Observable::from)
-                .reduce(0, (integer, integer2) -> integer + integer2)
-                .doOnNext(integer -> addToLog("Round value: " + integer));
     }
 
     private void addToLog(String s) {
         Log.v(TAG, s);
         logEvent.onNext(s);
-
     }
 
     public void stop() {
@@ -167,10 +145,6 @@ public class StepDetectorTestRunner {
 
     public Observable<Integer> currentRoundObservable() {
         return currentRound;
-    }
-
-    public void deleteLog() {
-        pedometerLogger.clear();
     }
 
 

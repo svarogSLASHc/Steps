@@ -28,4 +28,14 @@
     <string name="unmonitored_title">Add app to unmonitored</string>
     <string name="unmonitored_msg">You are using Samsung device. To improve app stability we recommend you to add app to unmonitored list</string>
     <string name="samsung_labeel">Add to unmonitored list</string>
+    <string name="in_vehicle">In a vehicle</string>
+    <string name="on_bicycle">On a bicycle</string>
+    <string name="on_foot">On foot</string>
+    <string name="running">Running</string>
+    <string name="still">Still</string>
+    <string name="tilting">Tilting</string>
+    <string name="unknown">Unknown activity</string>
+    <string name="walking">Walking</string>
+    <string name="unidentifiable_activity">Unidentifiable activity: %1$d</string>
+    <string name="recognition_format">%s - %d %%;</string>
 </resources>

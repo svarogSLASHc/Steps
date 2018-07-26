@@ -7,21 +7,21 @@ import com.test.pedometer.data.DeviceIdManager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PedometerLoggerController extends AbstractLoggerController {
+public class ActivityLoggerController extends AbstractLoggerController {
     private static final String SPACE = ",";
-    private static final String FILE_NAME = "impr.log";
+    private static final String FILE_NAME = "activity_recognition.log";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd'T'HH-mm-ss");
-    private static PedometerLoggerController INSTANCE;
+    private static ActivityLoggerController INSTANCE;
 
-    private PedometerLoggerController(Context context) {
+    private ActivityLoggerController(Context context) {
         super(context);
     }
 
-    public static PedometerLoggerController getInstance(Context context) {
-        if (null == INSTANCE) {
-            INSTANCE = new PedometerLoggerController(context);
-        }
-        return INSTANCE;
+    public static ActivityLoggerController getInstance(Context context) {
+       if (null == INSTANCE){
+           INSTANCE = new ActivityLoggerController(context);
+       }
+       return INSTANCE;
     }
 
     @Override
@@ -34,17 +34,6 @@ public class PedometerLoggerController extends AbstractLoggerController {
                         .append(SPACE)
                         .append(data)
                         .toString());
-    }
-
-
-    public String format(String data) {
-        return new StringBuilder(DATE_FORMAT.format(new Date()))
-                .append(SPACE)
-                .append(DeviceIdManager.getDeviceName())
-                .append(SPACE)
-                .append(data)
-                .append("\n")
-                .toString();
     }
 
     @Override

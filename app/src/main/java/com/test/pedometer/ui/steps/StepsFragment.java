@@ -93,7 +93,7 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         log.setOnLongClickListener(v -> {
             new android.app.AlertDialog.Builder(getActivity())
                     .setCancelable(true)
-                    .setTitle("Delete log?")
+                    .setTitle("Delete log?%;")
                     .setMessage(log.getText())
                     .setPositiveButton("Really?", (dialog, which) -> clearLog())
                     .show();

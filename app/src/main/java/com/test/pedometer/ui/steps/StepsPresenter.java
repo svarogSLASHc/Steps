@@ -8,10 +8,11 @@ import com.test.pedometer.R;
 import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
 import com.test.pedometer.data.network.NetworkController;
-import com.test.pedometer.data.sensors.StepDetectorTestRunner;
 import com.test.pedometer.data.settings.SettingsManager;
+import com.test.pedometer.domain.fileaccess.ActivityLoggerController;
 import com.test.pedometer.domain.fileaccess.DebugLoggerController;
 import com.test.pedometer.domain.fileaccess.PedometerLoggerController;
+import com.test.pedometer.domain.runner.StepDetectorTestRunner;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
 
 import java.util.ArrayList;
@@ -27,16 +28,18 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private final StepDetectorTestRunner stepDetectorTestRunner;
     private final SettingsManager settingsManager;
     private final DebugLoggerController debugLogger;
+    private PedometerLoggerController pedometerLogger;
+    private ActivityLoggerController activityLogger;
     private CompositeSubscription currentRoundSubscription;
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
-    private PedometerLoggerController pedometerLogger;
 
-    protected StepsPresenter(StepsView view) {
+    public StepsPresenter(StepsView view) {
         super(view);
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(view.getContext().getApplicationContext());
         pedometerLogger = PedometerLoggerController.getInstance(view.getContext());
         settingsManager = SettingsManager.getInstance(view.getContext());
         debugLogger = DebugLoggerController.getInstance(view.getContext());
+        activityLogger = ActivityLoggerController.getInstance(view.getContext());
     }
 
     @Override
@@ -52,8 +55,9 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
     public void sendClick() {
         final int resultsCount = getLogSize();
-        NetworkController.getInstance(view.getContext())
-                .uploadResults(pedometerLogger.getLogFileAsString())
+        final NetworkController networkController = NetworkController.getInstance(view.getContext());
+        networkController.uploadResults(pedometerLogger.getLogFileAsString())
+                .concatMap(s -> networkController.uploadResults(activityLogger.getLogFileAsString()))
                 .subscribeOn(Schedulers.io())
                 .onErrorResumeNext(this::handleUploadError)
                 .filter(response -> !UPLOAD_ERROR.equals(response))
@@ -114,7 +118,8 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     }
 
     private void deleteLog() {
-        stepDetectorTestRunner.deleteLog();
+        pedometerLogger.clear();
+        activityLogger.clear();
         enableStart();
     }
 

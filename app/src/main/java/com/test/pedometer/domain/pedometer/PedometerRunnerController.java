@@ -1,5 +1,9 @@
 package com.test.pedometer.domain.pedometer;
 
+import java.util.concurrent.TimeUnit;
+
+import rx.Observable;
+
 public class PedometerRunnerController {
     private static PedometerRunnerController INSTANCE;
     private final PedometerRepository pedometerRepository;
@@ -15,7 +19,17 @@ public class PedometerRunnerController {
         return INSTANCE;
     }
 
-    public void registerCounterListener(StepCountListener listener) {
+    public Observable<Integer> getStepsObservable(Integer delay) {
+        return Observable.<Integer>create(subscriber ->
+                registerCounterListener(subscriber::onNext))
+                .buffer(delay, TimeUnit.SECONDS)
+                .take(1)
+                .flatMap(Observable::from)
+                .reduce(0, (integer, integer2) -> integer + integer2);
+    }
+
+    private void registerCounterListener(StepCountListener listener) {
+        reset();
         pedometerRepository.registerStepListener(listener);
     }
 

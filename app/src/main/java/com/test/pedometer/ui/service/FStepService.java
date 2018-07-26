@@ -11,7 +11,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.test.pedometer.R;
-import com.test.pedometer.data.sensors.StepDetectorTestRunner;
+import com.test.pedometer.domain.runner.StepDetectorTestRunner;
 
 public class FStepService extends Service {
     private static String TAG = "FStepService";
