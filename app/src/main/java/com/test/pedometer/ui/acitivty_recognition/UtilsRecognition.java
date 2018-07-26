@@ -13,7 +13,8 @@ import java.util.List;
  */
 public class UtilsRecognition {
 
-    private UtilsRecognition() {}
+    private UtilsRecognition() {
+    }
 
     public static String mapRawActivityToString(Context context, String text, List<DetectedActivity> activities) {
         final StringBuilder result = new StringBuilder();
@@ -24,15 +25,16 @@ public class UtilsRecognition {
         if (result.length() > 0) {
             result.deleteCharAt(result.length() - 1);
         }
-        return result.toString();
+
+        return result.toString().isEmpty() ? "No results" : result.toString();
     }
 
     /**
      * Returns a human readable String corresponding to a detected activity type.
      */
-   public static String getActivityString(Context context, int detectedActivityType) {
+    public static String getActivityString(Context context, int detectedActivityType) {
         Resources resources = context.getResources();
-        switch(detectedActivityType) {
+        switch (detectedActivityType) {
             case DetectedActivity.IN_VEHICLE:
                 return resources.getString(R.string.in_vehicle);
             case DetectedActivity.ON_BICYCLE:
