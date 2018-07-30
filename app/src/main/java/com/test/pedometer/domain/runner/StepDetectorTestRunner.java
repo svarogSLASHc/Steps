@@ -125,7 +125,7 @@ public class StepDetectorTestRunner {
     }
 
     private void addToLog(String s) {
-        Log.v(TAG, s);
+        Log.d(TAG, s);
         logEvent.onNext(s);
     }
 

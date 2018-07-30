@@ -89,17 +89,6 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
         initList();
         presenter = new StepsPresenter(this);
         presenter.onViewCreated();
-        log.setOnClickListener(v -> presenter.getLogInternal());
-        log.setOnLongClickListener(v -> {
-            new android.app.AlertDialog.Builder(getActivity())
-                    .setCancelable(true)
-                    .setTitle("Delete log?%;")
-                    .setMessage(log.getText())
-                    .setPositiveButton("Really?", (dialog, which) -> clearLog())
-                    .show();
-
-            return false;
-        });
         clearUI();
         disableDelete();
     }
@@ -136,15 +125,10 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     @Override
     public void showStepResult(String msg) {
-        if (msg.contains("Register")){
-            log.setText(log.getText() + msg + "\n");
-        }
-        else {
-            new AlertDialog.Builder(getContext())
-                    .setMessage(msg)
-                    .setTitle("Step result")
-                    .show();
-        }
+        new AlertDialog.Builder(getContext())
+                .setMessage(msg)
+                .setTitle("Step result")
+                .show();
     }
 
     @Override

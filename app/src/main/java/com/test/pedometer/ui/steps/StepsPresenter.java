@@ -17,6 +17,7 @@ import com.test.pedometer.ui.steps.model.PocketViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -30,7 +31,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private final DebugLoggerController debugLogger;
     private PedometerLoggerController pedometerLogger;
     private ActivityLoggerController activityLogger;
-    private CompositeSubscription currentRoundSubscription;
+    private CompositeSubscription currentRoundSubscription = new CompositeSubscription();
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
 
     public StepsPresenter(StepsView view) {
@@ -57,6 +58,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         final int resultsCount = getLogSize();
         final NetworkController networkController = NetworkController.getInstance(view.getContext());
         networkController.uploadResults(pedometerLogger.getLogFileAsString())
+                .delay(3, TimeUnit.SECONDS)
                 .concatMap(s -> networkController.uploadResults(activityLogger.getLogFileAsString()))
                 .subscribeOn(Schedulers.io())
                 .onErrorResumeNext(this::handleUploadError)
@@ -73,7 +75,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     }
 
     public void subscribeOnSteps() {
-        currentRoundSubscription = Subscriptions.from(
+        currentRoundSubscription.add(Subscriptions.from(
                 stepDetectorTestRunner
                         .currentRoundObservable()
                         .subscribe(round -> handlerMainThread.post(() -> view.setCurrentRound(round))),
@@ -94,14 +96,11 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                             view.showStepResult(s);
                         })
                 )
-        );
+        ));
     }
 
     public void unsubscribeFromSteps() {
-        if (null != currentRoundSubscription && !currentRoundSubscription.isUnsubscribed()) {
-            currentRoundSubscription.unsubscribe();
-            currentRoundSubscription = null;
-        }
+        currentRoundSubscription.clear();
     }
 
     @NonNull
