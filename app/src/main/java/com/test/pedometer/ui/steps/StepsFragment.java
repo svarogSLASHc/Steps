@@ -125,9 +125,13 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     @Override
     public void showStepResult(String msg) {
+        RoundResultDialog view = new RoundResultDialog(getContext());
+        view.setMessage(msg);
         new AlertDialog.Builder(getContext())
-                .setMessage(msg)
-                .setTitle("Step result")
+                .setView(view)
+                .setTitle(R.string.dialog_step_result_title)
+                .setCancelable(true)
+                .setNegativeButton(R.string.dialog_step_result_hide, (dialog, which) -> dialog.dismiss())
                 .show();
     }
 

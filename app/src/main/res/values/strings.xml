@@ -38,4 +38,6 @@
     <string name="walking">Walking</string>
     <string name="unidentifiable_activity">Unidentifiable activity: %1$d</string>
     <string name="recognition_format">%s - %d %%;</string>
+    <string name="dialog_step_result_title">Step result</string>
+    <string name="dialog_step_result_hide">Hide</string>
 </resources>
