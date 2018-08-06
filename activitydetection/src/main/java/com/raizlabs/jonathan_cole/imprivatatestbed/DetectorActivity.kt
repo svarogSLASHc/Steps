@@ -12,7 +12,6 @@ import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.widget.TextView
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.DetectedActivity
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BuzzManager
@@ -20,6 +19,7 @@ import com.raizlabs.jonathan_cole.imprivatatestbed.manager.TTSManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDataHistories
 import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDetectorService
 import com.raizlabs.jonathan_cole.imprivatatestbed.service.recognizer.ActivityRecognitionIntent
+import kotlinx.android.synthetic.main.activity_main_detection.*
 
 /**
  * The overall structure is this:
@@ -67,7 +67,7 @@ class DetectorActivity : AppCompatActivity() {
                 ActivityRecognitionModel(DetectedActivity.UNKNOWN, "Unknown")
         ))
 
-        recyclerView = findViewById<RecyclerView>(R.id.activity_recognition_rv).apply {
+        recyclerView = activity_recognition_rv.apply {
             setHasFixedSize(true)
             layoutManager = viewManager
             adapter = viewAdapter
@@ -75,19 +75,11 @@ class DetectorActivity : AppCompatActivity() {
 
         viewAdapter.notifyDataSetChanged()
 
-//        viewAdapter.let {
-//            mBroadCastReceiver = ActivityBroadcastReceiver()
-//            mBroadCastReceiver?.let { receiver ->
-//                LocalBroadcastManager.getInstance(this).registerReceiver(
-//                        receiver, IntentFilter("ActivityUpdate"))
-//            }
-//        }
-
-            mBroadCastReceiver = ActivityBroadcastReceiver()
-            mBroadCastReceiver?.let { receiver ->
-                LocalBroadcastManager.getInstance(this).registerReceiver(
-                        receiver, IntentFilter("ActivityUpdate"))
-            }
+        mBroadCastReceiver = ActivityBroadcastReceiver()
+        mBroadCastReceiver?.let { receiver ->
+            LocalBroadcastManager.getInstance(this).registerReceiver(
+                    receiver, IntentFilter("ActivityUpdate"))
+        }
 
         // Set up the service for activity detection (our custom windowed history keeping code)
         mService = Intent(this, ActivityDetectorService::class.java)
@@ -114,8 +106,7 @@ class DetectorActivity : AppCompatActivity() {
         TTSManager.getInstance(this).onDestroy()
 
         stopService(mService)
-        LocalBroadcastManager.getInstance(this).
-        unregisterReceiver(mBroadCastReceiver as BroadcastReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadCastReceiver as BroadcastReceiver)
 
         mActivityRecognitionClient?.removeActivityUpdates(getActivityDetectionPendingIntent())
 
@@ -137,14 +128,10 @@ class DetectorActivity : AppCompatActivity() {
 
         // Calculate an overall "yes" or "no" for each sensor based on history data
 
-        fun getConfirmFromProximityDetector(): Boolean {
-            data.proximityDetector.forEach {
-                if(it.values[0] < 2.0f) {
-                    return true
+        fun getConfirmFromProximityDetector() =
+                data.proximityDetector.any {
+                    it.values[0] < 2.0f
                 }
-            }
-            return false
-        }
 
         fun getConfirmFromStepCounter(): Boolean {
             return data.stepCounter.count() >= 2
@@ -154,14 +141,11 @@ class DetectorActivity : AppCompatActivity() {
             return data.stepDetector.isNotEmpty()
         }
 
-        fun getConfirmFromActivityRecognition(): Boolean {
-            data.activityRecognition.forEach {
-                if(it.event.getActivityConfidence(DetectedActivity.ON_FOOT) > 50) {
-                    return true
+        fun getConfirmFromActivityRecognition() =
+                data.activityRecognition.any {
+                    it.event.getActivityConfidence(DetectedActivity.ON_FOOT) > 50
+
                 }
-            }
-            return false
-        }
 
         fun getConfirmFromSignificantMotion(): Boolean {
             return data.significantMotion.isNotEmpty()
@@ -208,21 +192,22 @@ class DetectorActivity : AppCompatActivity() {
         }
 
         fun setOverallText() {
-            val textView = findViewById<TextView>(R.id.overallEvaluationText)
-            val str = if (getOverallEvaluation()) "User is moving" else "No movement"
-            if (getOverallEvaluation()) {
-                textView.setTextColor(Color.parseColor("#17D650")) // Green
-            } else {
-                textView.setTextColor(Color.parseColor("#D62A17")) // Red
+            overallEvaluationText.apply {
+                val str = if (getOverallEvaluation()) "User is moving" else "No movement"
+                if (getOverallEvaluation()) {
+                    this.setTextColor(Color.parseColor("#17D650")) // Green
+                } else {
+                    this.setTextColor(Color.parseColor("#D62A17")) // Red
+                }
+                this.text = str
             }
-            textView.text = str
         }
 
-        findViewById<TextView>(R.id.counterText).text = getStepCounterString()
-        findViewById<TextView>(R.id.detectorText).text = getStepDetectorString()
-        findViewById<TextView>(R.id.proximityText).text = getProximityString()
-        findViewById<TextView>(R.id.significantMotionText).text = getSignificantMotionString()
-        findViewById<TextView>(R.id.activityRecognitionText).text = getActivityRecognitionString()
+        counterText.text = getStepCounterString()
+        detectorText.text = getStepDetectorString()
+        proximityText.text = getProximityString()
+        significantMotionText.text = getSignificantMotionString()
+        activityRecognitionText.text = getActivityRecognitionString()
 
         setOverallText()
 
@@ -238,7 +223,7 @@ class DetectorActivity : AppCompatActivity() {
 
     }
 
-    inner class ActivityBroadcastReceiver: BroadcastReceiver() {
+    inner class ActivityBroadcastReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
