@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/StepCounterTestApp.iml" filepath="$PROJECT_DIR$/StepCounterTestApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/activitydetection/activitydetection.iml" filepath="$PROJECT_DIR$/activitydetection/activitydetection.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

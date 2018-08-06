@@ -39,9 +39,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityView,
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getTitle().equals(getString(R.string.samsung_labeel))){
-            navigateToUnmonitored();
-        }
         switch (item.getItemId()) {
             case R.id.action_settings:
                 if (settings_enabled){
@@ -51,9 +48,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityView,
             case android.R.id.home:
                 backToMainScreen();
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            case R.id.detector:
+                startActivity(new Intent(this, com.raizlabs.jonathan_cole.imprivatatestbed.DetectorActivity.class));
+                return true;
         }
+
+        if (item.getTitle().equals(getString(R.string.samsung_labeel))){
+            navigateToUnmonitored();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void backToMainScreen() {

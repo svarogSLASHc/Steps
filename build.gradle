@@ -2,6 +2,9 @@
 
 buildscript {
     ext.kotlin_version = '1.2.51'
+    ext.sdk_version = 27
+    ext.min_sdk_version = 21
+    ext.android_support_version = '27.1.1'
 
     repositories {
         google()

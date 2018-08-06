@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ImprivataTestbed</string>
+    <string name="_50_reading_is_probably_correct"><![CDATA[> 50%: Reading is probably correct.]]></string>
+    <string name="_50_there_is_another_activity_that_is_as_likely"><![CDATA[<= 50%: There is another activity that is as likely.]]></string>
+</resources>

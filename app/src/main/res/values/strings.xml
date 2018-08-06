@@ -40,4 +40,5 @@
     <string name="recognition_format">%s - %d %%;</string>
     <string name="dialog_step_result_title">Step result</string>
     <string name="dialog_step_result_hide">Hide</string>
+    <string name="menu_detector">Detector</string>
 </resources>
