@@ -1,6 +1,7 @@
 package com.test.pedometer.domain.fileaccess;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.test.pedometer.data.DeviceIdManager;
 
@@ -8,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class PedometerLoggerController extends AbstractLoggerController {
-    private static final String SPACE = ",";
+    private static final String SPACE = ", ";
     private static final String FILE_NAME = "impr.log";
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd'T'HH-mm-ss");
     private static PedometerLoggerController INSTANCE;
@@ -26,21 +27,20 @@ public class PedometerLoggerController extends AbstractLoggerController {
 
     @Override
     public void add(String data) {
-        final StringBuilder stringBuilder = new StringBuilder(DATE_FORMAT.format(new Date()));
+        if (TextUtils.isEmpty(data)) {
+            data = "No results";
+        }
         loggerRepository.add(
-                stringBuilder
-                        .append(SPACE)
-                        .append(DeviceIdManager.getDeviceName())
+                new StringBuilder(DATE_FORMAT.format(new Date()))
                         .append(SPACE)
                         .append(data)
+                        .append("\n")
                         .toString());
     }
 
 
-    public String format(String data) {
-        return new StringBuilder(DATE_FORMAT.format(new Date()))
-                .append(SPACE)
-                .append(DeviceIdManager.getDeviceName())
+    public String formatStart(String data) {
+        return new StringBuilder(DeviceIdManager.getDeviceName())
                 .append(SPACE)
                 .append(data)
                 .append("\n")

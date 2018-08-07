@@ -6,6 +6,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 
 public class StepsFragment extends BaseFragment implements StepsView, PocketItemDelegate.PocketSelectListener {
     @BindView(R.id.recyclerView)
@@ -51,6 +53,13 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
     void startClick() {
         getActivity().startService(new Intent(getContext(), FStepService.class));
     }
+
+    @OnLongClick(R.id.send)
+    boolean startLongClick() {
+        presenter.getLogInternal();
+        return true;
+    }
+
 
     @OnClick(R.id.send)
     void sendClick() {
@@ -159,12 +168,10 @@ public class StepsFragment extends BaseFragment implements StepsView, PocketItem
 
     @Override
     public void showLog(String msg) {
-        log.setText(msg);
-    }
-
-    private void clearLog() {
-        presenter.clearLogInternal();
-        log.setText("");
+        if (TextUtils.isEmpty(msg)){
+            msg = "No results";
+        }
+        showStepResult(msg);
     }
 
     @Override

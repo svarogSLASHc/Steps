@@ -1,18 +1,19 @@
 package com.raizlabs.jonathan_cole.imprivatatestbed.manager
 
 import android.app.Activity
+import android.content.Context
 import android.hardware.*
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDataHistories
-import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDetectorService
 import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityReading
 import com.raizlabs.jonathan_cole.imprivatatestbed.detection.EventReading
 
-class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEventListener, TriggerEventListener() {
+class ActivityDetectorManager(val context: Context) : SensorEventListener, TriggerEventListener() {
 
     companion object {
         const val TAG = "ActivityDetectorManager"
@@ -20,7 +21,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
 
     private val maxReportLatencyUs: Int = 0 // Setting to 0 will disable batching for sensors that support it.
     private val samplingPeriodUs: Int = SensorManager.SENSOR_DELAY_FASTEST
-    private val broadcastManager = BroadcastManager.getInstance(service)
+    private val broadcastManager = BroadcastManager.getInstance(context)
     private var mStepCounterHistory = mutableListOf<EventReading>()
     private var mStepDetectorHistory = mutableListOf<EventReading>()
     private var mSignificantMotionDetectorHistory = mutableListOf<EventReading>()
@@ -33,30 +34,35 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
     lateinit var mStepDetector: Sensor
     lateinit var mSignificantMotionDetector: Sensor
     lateinit var mProximityDetector: Sensor
+    private var dispatchCallback: DispatchNewDataHistoryCallback? = null
 
     private var mHandler: Handler? = null
 
 
     var windowSizeMS = 10 * 1000 // 10 seconds
 
-    init {
+    fun register() {
         registerListeners()
         beginAutomaticRefreshing(1000)
         registerActivityRecognitionListeners()
+    }
 
+    fun registerWithDispatch(callback:DispatchNewDataHistoryCallback?){
+        dispatchCallback = callback
+        register()
     }
 
     private fun registerActivityRecognitionListeners() {
         // Set up the activity recognition API, which will communicate with the ActivityDetectorService.
-        mActivityRecognitionClient = ActivityRecognitionClient(service)
+        mActivityRecognitionClient = ActivityRecognitionClient(context)
         mActivityRecognitionClient?.requestActivityUpdates(0, broadcastManager.getActivityDetectionPendingIntent())
         broadcastManager.registerForActivityRecognitionUpdates { onRegisterNewActivityData(it) }
     }
 
-    fun registerListeners() {
+    private fun registerListeners() {
         Log.i(TAG, "Registering Listeners...")
         // Get the default sensor for the sensor type from the SenorManager
-        mSensorManager = service.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
+        mSensorManager = context.getSystemService(Activity.SENSOR_SERVICE) as SensorManager
 
         // sensorType is either Sensor.TYPE_STEP_COUNTER or Sensor.TYPE_STEP_DETECTOR
         mStepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -78,13 +84,13 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
         if (!counterIsBatched) {
             val logOutput = "Could not register step counter in batch mode. Falling back to continuous mode."
             Log.w(TAG, logOutput)
-            Toast.makeText(service, logOutput, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, logOutput, Toast.LENGTH_SHORT).show()
         }
 
         if (!detectorIsBatched) {
             val logOutput = "Could not register step detector in batch mode. Falling back to continuous mode."
             Log.w(TAG, logOutput)
-            Toast.makeText(service, logOutput, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, logOutput, Toast.LENGTH_SHORT).show()
         }
 
         mSensorManager.registerListener(this, mProximityDetector, samplingPeriodUs, maxReportLatencyUs)
@@ -204,7 +210,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
     }
 
     private fun dispatch() {
-        // Give the model to the service to be broadcasted to listeners.
+        // Give the model to the context to be broadcasted to listeners.
         val model = ActivityDataHistories(
                 mStepCounterHistory,
                 mStepDetectorHistory,
@@ -213,13 +219,14 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
                 mProximityDetectorHistory
         )
         broadcastManager.dispatchNewDataHistory(model)
+        dispatchCallback?.onNewData(model)
     }
 
     /**
      * Begins a repeating prune/dispatch at an interval of `frequencyMS` milliseconds.
      */
     private fun beginAutomaticRefreshing(frequencyMS: Long) {
-        mHandler = Handler()
+        mHandler = Handler(Looper.getMainLooper())
 
         mHandler?.postDelayed(object : Runnable {
             override fun run() {
@@ -234,5 +241,9 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
      */
     private fun endAutomaticRefreshing() {
         mHandler?.removeCallbacksAndMessages(null)
+    }
+
+    interface DispatchNewDataHistoryCallback {
+        fun onNewData(action: ActivityDataHistories)
     }
 }

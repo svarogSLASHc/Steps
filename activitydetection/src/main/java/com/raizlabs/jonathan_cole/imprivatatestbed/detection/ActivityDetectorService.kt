@@ -7,7 +7,7 @@ import android.util.Log
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.ActivityDetectorManager
 
 /**
- * This is the service that will listen for sensor events,Activity Recognition API updates and broadcast those events
+ * This is the context that will listen for sensor events,Activity Recognition API updates and broadcast those events
  * to local listeners.
  */
 class ActivityDetectorService : Service() {
@@ -20,12 +20,12 @@ class ActivityDetectorService : Service() {
         const val TAG = "ActivityDetectorService"
     }
 
-    private lateinit var activityManager: ActivityDetectorManager
+    private val activityManager = ActivityDetectorManager(this)
 
     override fun onCreate() {
         Log.i(TAG, "Creating ActivityDetectorService...")
         super.onCreate()
-        activityManager = ActivityDetectorManager(this)
+        activityManager.register()
     }
 
     override fun onDestroy() {

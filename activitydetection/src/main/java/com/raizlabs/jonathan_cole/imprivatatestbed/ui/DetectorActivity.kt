@@ -67,7 +67,7 @@ class DetectorActivity : AppCompatActivity() {
         viewAdapter.notifyDataSetChanged()
 
         broadcastManager.registerForHistoryUpdates { onReceivedNewHistoryData(it) }
-        // Set up the service for activity detection (our custom windowed history keeping code)
+        // Set up the context for activity detection (our custom windowed history keeping code)
         mService = Intent(this, ActivityDetectorService::class.java)
         startService(mService)
     }
@@ -81,7 +81,7 @@ class DetectorActivity : AppCompatActivity() {
     }
 
     /**
-     * Update the UI with the new state of the data history given by the service.
+     * Update the UI with the new state of the data history given by the context.
      */
     private fun onReceivedNewHistoryData(data: ActivityDataHistories) {
 

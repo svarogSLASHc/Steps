@@ -23,7 +23,7 @@
         <service android:name=".detection.ActivityDetectorService" />
         <receiver android:name=".ui.DetectorActivity$ActivityBroadcastReceiver" />
         <service android:name=".detection.recognizer.ActivityRecognitionIntent" />
-        <!--<receiver android:name=".service.ActivityDetectorService$ActivityRecognitionBroadcastReceiver" />-->
+        <!--<receiver android:name=".context.ActivityDetectorService$ActivityRecognitionBroadcastReceiver" />-->
     </application>
 
 </manifest>

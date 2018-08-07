@@ -8,7 +8,8 @@
     <string name="start">Start</string>
     <string name="delete">Delete</string>
     <string name="send">Send</string>
-    <string name="step_counter_result">%s,%d,%d,%d,%d</string>
+    <!--<string name="step_counter_result">%s,%d,%d,%d,%d</string>-->
+    <string name="step_counter_result">pocket %s,round %d, total rounds %d, desired steps %d</string>
     <string name="settings_steps">Steps</string>
     <string name="settings_please_enter_number_of_steps">Please enter number of steps</string>
     <string name="round_time">Round time</string>

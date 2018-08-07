@@ -11,7 +11,8 @@ import rx.Observable;
 
 public class SpeakManager {
     private static SpeakManager INSTANCE;
-    private TextToSpeech textToSpeech;
+    private final Context context;
+    private  TextToSpeech textToSpeech;
 
     private SpeakManager(Context context){
         textToSpeech =  new TextToSpeech(context, status -> {
@@ -20,9 +21,10 @@ public class SpeakManager {
                 textToSpeech.setPitch(0.8f);
             }
             else {
-                Log.e("SpeakManager", "Error while init TextToSpeech");
+                Log.e("SpeakManager", "Error while register TextToSpeech");
             }
         });
+        this.context = context;
     }
 
     public static SpeakManager getInstance(Context context){

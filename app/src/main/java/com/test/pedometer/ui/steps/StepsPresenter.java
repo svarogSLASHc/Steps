@@ -9,8 +9,6 @@ import com.test.pedometer.common.BasePresenter;
 import com.test.pedometer.common.list.ListItem;
 import com.test.pedometer.data.network.NetworkController;
 import com.test.pedometer.data.settings.SettingsManager;
-import com.test.pedometer.domain.fileaccess.ActivityLoggerController;
-import com.test.pedometer.domain.fileaccess.DebugLoggerController;
 import com.test.pedometer.domain.fileaccess.PedometerLoggerController;
 import com.test.pedometer.domain.runner.StepDetectorTestRunner;
 import com.test.pedometer.ui.steps.model.PocketViewModel;
@@ -28,9 +26,7 @@ public class StepsPresenter extends BasePresenter<StepsView> {
     private static final String UPLOAD_ERROR = "UPLOAD_ERROR";
     private final StepDetectorTestRunner stepDetectorTestRunner;
     private final SettingsManager settingsManager;
-    private final DebugLoggerController debugLogger;
     private PedometerLoggerController pedometerLogger;
-    private ActivityLoggerController activityLogger;
     private CompositeSubscription currentRoundSubscription = new CompositeSubscription();
     private Handler handlerMainThread = new Handler(Looper.getMainLooper());
 
@@ -39,8 +35,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(view.getContext().getApplicationContext());
         pedometerLogger = PedometerLoggerController.getInstance(view.getContext());
         settingsManager = SettingsManager.getInstance(view.getContext());
-        debugLogger = DebugLoggerController.getInstance(view.getContext());
-        activityLogger = ActivityLoggerController.getInstance(view.getContext());
     }
 
     @Override
@@ -59,7 +53,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
         final NetworkController networkController = NetworkController.getInstance(view.getContext());
         networkController.uploadResults(pedometerLogger.getLogFileAsString())
                 .delay(3, TimeUnit.SECONDS)
-                .concatMap(s -> networkController.uploadResults(activityLogger.getLogFileAsString()))
                 .subscribeOn(Schedulers.io())
                 .onErrorResumeNext(this::handleUploadError)
                 .filter(response -> !UPLOAD_ERROR.equals(response))
@@ -92,7 +85,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
                         }),
                 stepDetectorTestRunner.logs().subscribe(s ->
                         handlerMainThread.post(() -> {
-                            debugLogger.save(s);
                             view.showStepResult(s);
                         })
                 )
@@ -118,7 +110,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
     private void deleteLog() {
         pedometerLogger.clear();
-        activityLogger.clear();
         enableStart();
     }
 
@@ -157,10 +148,6 @@ public class StepsPresenter extends BasePresenter<StepsView> {
 
 
     public void getLogInternal() {
-        view.showLog(debugLogger.getLogFileAsString());
-    }
-
-    public void clearLogInternal() {
-        debugLogger.clear();
+        view.showLog(pedometerLogger.getLogFileAsString());
     }
 }

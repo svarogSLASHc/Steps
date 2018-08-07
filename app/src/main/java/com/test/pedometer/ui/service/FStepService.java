@@ -22,7 +22,7 @@ public class FStepService extends Service {
 
     @Override
     public void onCreate() {
-        Log.v(TAG, "Creating the service");
+        Log.v(TAG, "Creating the context");
         super.onCreate();
         stepDetectorTestRunner = StepDetectorTestRunner.getInstance(this.getApplicationContext());
     }
@@ -74,7 +74,7 @@ public class FStepService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.v(TAG, "Destroying the service");
+        Log.v(TAG, "Destroying the context");
         super.onDestroy();
         stepDetectorTestRunner.stop();
     }

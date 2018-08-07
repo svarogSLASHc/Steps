@@ -8,7 +8,7 @@ import android.widget.TextView
 import com.test.pedometer.R
 
 
-public class RoundResultDialog(context: Context?, attributes: AttributeSet?) : LinearLayout(context, attributes) {
+class RoundResultDialog(context: Context?, attributes: AttributeSet?) : LinearLayout(context, attributes) {
 
     constructor(context: Context?):this(context, null)
     init{
@@ -16,7 +16,7 @@ public class RoundResultDialog(context: Context?, attributes: AttributeSet?) : L
         inflater.inflate(R.layout.dialog_scrollable_content, this, true)
     }
 
-    public fun setMessage(message: CharSequence?) {
+    fun setMessage(message: CharSequence?) {
         findViewById<TextView>(R.id.text_dialog)!!.text = message
     }
 }

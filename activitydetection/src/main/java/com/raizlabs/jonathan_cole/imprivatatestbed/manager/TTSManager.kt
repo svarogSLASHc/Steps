@@ -14,7 +14,7 @@ class TTSManager private constructor(context: Context): TextToSpeech.OnInitListe
 
     companion object: SingletonHolder<TTSManager, Context>(::TTSManager)
 
-    // For TextToSpeech.OnInitListener, not overall init
+    // For TextToSpeech.OnInitListener, not overall register
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             textToSpeech.language = Locale.US
