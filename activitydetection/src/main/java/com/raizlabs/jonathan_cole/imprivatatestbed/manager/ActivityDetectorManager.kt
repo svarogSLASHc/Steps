@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed.service
+package com.raizlabs.jonathan_cole.imprivatatestbed.manager
 
 import android.app.Activity
 import android.hardware.*
@@ -7,7 +7,10 @@ import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.ActivityRecognitionResult
-import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BroadcastManager
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDataHistories
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDetectorService
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityReading
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.EventReading
 
 class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEventListener, TriggerEventListener() {
 
@@ -47,7 +50,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
         // Set up the activity recognition API, which will communicate with the ActivityDetectorService.
         mActivityRecognitionClient = ActivityRecognitionClient(service)
         mActivityRecognitionClient?.requestActivityUpdates(0, broadcastManager.getActivityDetectionPendingIntent())
-        broadcastManager.registerForActivityRecognitionUpdates { onRegisterNewActivityData(it)}
+        broadcastManager.registerForActivityRecognitionUpdates { onRegisterNewActivityData(it) }
     }
 
     fun registerListeners() {
@@ -125,20 +128,16 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
         // Add the event to its corresponding history list
         when (event.sensor.type) {
             Sensor.TYPE_STEP_DETECTOR -> {
-                prune()
                 mStepDetectorHistory.add(EventReading(event.sensor, event.values.clone()))
-                dispatch()
+                update()
             }
             Sensor.TYPE_STEP_COUNTER -> {
-                prune()
                 mStepCounterHistory.add(EventReading(event.sensor, event.values.clone()))
-                dispatch()
+                update()
             }
             Sensor.TYPE_PROXIMITY -> {
-                prune()
                 mProximityDetectorHistory.add(EventReading(event.sensor, event.values.clone()))
-                dispatch()
-
+                update()
             }
         }
     }
@@ -149,9 +148,8 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
 
         if (event.sensor.type == Sensor.TYPE_SIGNIFICANT_MOTION) {
 
-            prune()
             mSignificantMotionDetectorHistory.add(EventReading(event.sensor, event.values.clone()))
-            dispatch()
+            update()
 
             // Re-register the trigger sensor (required for one-shot)
             mSensorManager.requestTriggerSensor(this, mSignificantMotionDetector)
@@ -161,15 +159,24 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
 
     // Activity Recognition API listener
     private fun onRegisterNewActivityData(result: ActivityRecognitionResult) {
-        prune()
         mActivityRecognitionHistory.add(ActivityReading(result))
+        update()
+    }
+
+    private fun update() {
+//        prune()
+//        dispatch()
+    }
+
+    private fun updateAll() {
+        prune()
         dispatch()
     }
 
     /**
      * Remove readings that are outside the time window specified by `windowSizeMS`.
      */
-    fun prune() {
+    private fun prune() {
         val currentTimeMS = System.currentTimeMillis()
 
         mStepDetectorHistory = mStepDetectorHistory.filter {
@@ -196,7 +203,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
 
     }
 
-    fun dispatch() {
+    private fun dispatch() {
         // Give the model to the service to be broadcasted to listeners.
         val model = ActivityDataHistories(
                 mStepCounterHistory,
@@ -211,13 +218,12 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
     /**
      * Begins a repeating prune/dispatch at an interval of `frequencyMS` milliseconds.
      */
-    fun beginAutomaticRefreshing(frequencyMS: Long) {
+    private fun beginAutomaticRefreshing(frequencyMS: Long) {
         mHandler = Handler()
 
         mHandler?.postDelayed(object : Runnable {
             override fun run() {
-                prune()
-                dispatch()
+                updateAll()
                 mHandler?.postDelayed(this, frequencyMS)
             }
         }, frequencyMS)
@@ -226,7 +232,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEven
     /**
      * Stops the automatic prune/dispatch loop.
      */
-    fun endAutomaticRefreshing() {
+    private fun endAutomaticRefreshing() {
         mHandler?.removeCallbacksAndMessages(null)
     }
 }

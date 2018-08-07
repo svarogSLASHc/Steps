@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed
+package com.raizlabs.jonathan_cole.imprivatatestbed.ui
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

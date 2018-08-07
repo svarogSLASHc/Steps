@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed
+package com.raizlabs.jonathan_cole.imprivatatestbed.ui
 
 import android.graphics.PorterDuff
 import android.support.v7.widget.RecyclerView
@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.google.android.gms.location.ActivityRecognitionResult
+import com.raizlabs.jonathan_cole.imprivatatestbed.R
 
 class ActivityRecognitionAdapter(val data: List<ActivityRecognitionModel>): RecyclerView.Adapter<ActivityRecognitionAdapter.ViewHolder>() {
 

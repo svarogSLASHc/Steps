@@ -9,8 +9,8 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.support.v4.content.LocalBroadcastManager
 import com.google.android.gms.location.ActivityRecognitionResult
-import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDataHistories
-import com.raizlabs.jonathan_cole.imprivatatestbed.service.recognizer.ActivityRecognitionIntent
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDataHistories
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.recognizer.ActivityRecognitionIntent
 import com.raizlabs.jonathan_cole.imprivatatestbed.utility.SingletonHolder
 
 // Singleton for easy register/unregister broadcasts.

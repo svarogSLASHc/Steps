@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed.service.recognizer
+package com.raizlabs.jonathan_cole.imprivatatestbed.detection.recognizer
 
 import android.app.IntentService
 import android.content.Intent

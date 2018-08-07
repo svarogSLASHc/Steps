@@ -1,9 +1,10 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed.service
+package com.raizlabs.jonathan_cole.imprivatatestbed.detection
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.raizlabs.jonathan_cole.imprivatatestbed.manager.ActivityDetectorManager
 
 /**
  * This is the service that will listen for sensor events,Activity Recognition API updates and broadcast those events
@@ -19,7 +20,7 @@ class ActivityDetectorService : Service() {
         const val TAG = "ActivityDetectorService"
     }
 
-    lateinit var activityManager: ActivityDetectorManager
+    private lateinit var activityManager: ActivityDetectorManager
 
     override fun onCreate() {
         Log.i(TAG, "Creating ActivityDetectorService...")

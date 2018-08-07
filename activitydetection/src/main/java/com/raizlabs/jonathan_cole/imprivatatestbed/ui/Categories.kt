@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed
+package com.raizlabs.jonathan_cole.imprivatatestbed.ui
 
 import com.google.android.gms.location.DetectedActivity
 

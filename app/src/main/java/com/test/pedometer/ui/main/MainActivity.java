@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.raizlabs.jonathan_cole.imprivatatestbed.ui.DetectorActivity;
 import com.test.pedometer.R;
 import com.test.pedometer.ui.setting.SettingsFragment;
 import com.test.pedometer.ui.setting.SettingsView;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView,
                 backToMainScreen();
                 return true;
             case R.id.detector:
-                startActivity(new Intent(this, com.raizlabs.jonathan_cole.imprivatatestbed.DetectorActivity.class));
+                startActivity(new Intent(this, DetectorActivity.class));
                 return true;
         }
 

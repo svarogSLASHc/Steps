@@ -19,10 +19,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application>
-        <activity android:name=".DetectorActivity" />
-        <service android:name=".service.ActivityDetectorService" />
-        <receiver android:name=".DetectorActivity$ActivityBroadcastReceiver" />
-        <service android:name=".service.recognizer.ActivityRecognitionIntent" />
+        <activity android:name=".ui.DetectorActivity" />
+        <service android:name=".detection.ActivityDetectorService" />
+        <receiver android:name=".ui.DetectorActivity$ActivityBroadcastReceiver" />
+        <service android:name=".detection.recognizer.ActivityRecognitionIntent" />
         <!--<receiver android:name=".service.ActivityDetectorService$ActivityRecognitionBroadcastReceiver" />-->
     </application>
 

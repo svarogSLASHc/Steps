@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed.service
+package com.raizlabs.jonathan_cole.imprivatatestbed.detection
 
 import android.hardware.Sensor
 import android.os.Parcelable

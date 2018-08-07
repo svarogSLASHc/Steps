@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".DetectorActivity">
+    tools:context=".ui.DetectorActivity">
 
     <TextView
         android:id="@+id/overallEvaluationText"
@@ -21,13 +21,13 @@
         android:layout_height="match_parent"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarSize="5dp"
-        tools:context=".DetectorActivity">
+        tools:context=".ui.DetectorActivity">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            tools:context=".DetectorActivity">
+            tools:context=".ui.DetectorActivity">
 
             <TextView
                 android:id="@+id/recognitionHeaderText"

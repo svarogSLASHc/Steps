@@ -1,4 +1,4 @@
-package com.raizlabs.jonathan_cole.imprivatatestbed
+package com.raizlabs.jonathan_cole.imprivatatestbed.ui
 
 import android.content.Intent
 import android.graphics.Color
@@ -7,11 +7,13 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import com.google.android.gms.location.DetectedActivity
+import com.raizlabs.jonathan_cole.imprivatatestbed.R
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDataHistories
+import com.raizlabs.jonathan_cole.imprivatatestbed.detection.ActivityDetectorService
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BroadcastManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BuzzManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.TTSManager
-import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDataHistories
-import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDetectorService
+import com.raizlabs.jonathan_cole.imprivatatestbed.utility.ActivityDetectionModelAdapter
 import kotlinx.android.synthetic.main.activity_main_detection.*
 
 /**
@@ -90,76 +92,12 @@ class DetectorActivity : AppCompatActivity() {
         data.activityRecognition.lastOrNull()?.let {
             viewAdapter.updateDataWithResult(it.event)
         }
-
-        // Calculate an overall "yes" or "no" for each sensor based on history data
-
-        fun getConfirmFromProximityDetector() =
-                data.proximityDetector.any {
-                    it.values[0] < 2.0f
-                }
-
-        fun getConfirmFromStepCounter(): Boolean {
-            return data.stepCounter.count() >= 2
-        }
-
-        fun getConfirmFromStepDetector(): Boolean {
-            return data.stepDetector.isNotEmpty()
-        }
-
-        fun getConfirmFromActivityRecognition() =
-                data.activityRecognition.any {
-                    it.event.getActivityConfidence(DetectedActivity.ON_FOOT) > 50
-
-                }
-
-        fun getConfirmFromSignificantMotion(): Boolean {
-            return data.significantMotion.isNotEmpty()
-        }
-
-        fun getOverallEvaluation(): Boolean {
-            return getConfirmFromActivityRecognition() || getConfirmFromStepCounter() ||
-                    getConfirmFromStepDetector() || getConfirmFromSignificantMotion()
-        }
-
-        fun getStepCounterString(): String {
-            var output = ""
-            output += "Counter: " + (if (getConfirmFromStepCounter()) "Yes" else "No ") + " - ${data.stepCounter.size} values" + "\n"
-            output += data.stepCounter.map { it.values[0].toInt() }.toString()
-            return output
-        }
-
-        fun getStepDetectorString(): String {
-            var output = ""
-            output += "Detector: " + (if (getConfirmFromStepDetector()) "Yes" else "No ") + " - ${data.stepDetector.size} values" + "\n"
-            output += data.stepDetector.map { it.values[0].toInt() }.toString()
-            return output
-        }
-
-        fun getProximityString(): String {
-            var output = ""
-            output += "Proximity: " + (if (getConfirmFromProximityDetector()) "Yes" else "No ") + " - ${data.proximityDetector.size} values" + "\n"
-            output += data.proximityDetector.map { it.values[0] }.toString()
-            return output
-        }
-
-        fun getSignificantMotionString(): String {
-            var output = ""
-            output += "Significant Motion: " + (if (getConfirmFromSignificantMotion()) "Yes" else "No ") + " - ${data.significantMotion.size} values" + "\n"
-            output += data.significantMotion.map { it.values[0] }.toString()
-            return output
-        }
-
-        fun getActivityRecognitionString(): String {
-            var output = ""
-            output += "Activity Recognition: " + (if (getConfirmFromActivityRecognition()) "Yes" else "No ") + " - ${data.activityRecognition.size} values" + "\n"
-            output += data.activityRecognition.map { it.event.getActivityConfidence(DetectedActivity.ON_FOOT) }
-            return output
-        }
+        val adaptedData = ActivityDetectionModelAdapter(data)
 
         fun setOverallText() {
             overallEvaluationText.apply {
-                val str = if (getOverallEvaluation()) "User is moving" else "No movement"
-                if (getOverallEvaluation()) {
+                val str = if (adaptedData.getOverallEvaluation()) "User is moving" else "No movement"
+                if (adaptedData.getOverallEvaluation()) {
                     this.setTextColor(Color.parseColor("#17D650")) // Green
                 } else {
                     this.setTextColor(Color.parseColor("#D62A17")) // Red
@@ -168,22 +106,22 @@ class DetectorActivity : AppCompatActivity() {
             }
         }
 
-        counterText.text = getStepCounterString()
-        detectorText.text = getStepDetectorString()
-        proximityText.text = getProximityString()
-        significantMotionText.text = getSignificantMotionString()
-        activityRecognitionText.text = getActivityRecognitionString()
+        counterText.text = adaptedData.getStepCounterString()
+        detectorText.text = adaptedData.getStepDetectorString()
+        proximityText.text = adaptedData.getProximityString()
+        significantMotionText.text = adaptedData.getSignificantMotionString()
+        activityRecognitionText.text = adaptedData.getActivityRecognitionString()
 
         setOverallText()
 
         // If the overall state has changed, read it out loud
-        val newOverallState = getOverallEvaluation()
-        if (newOverallState != lastOverallState) {
+        val newOverallState = adaptedData.getOverallEvaluation()
+//        if (newOverallState != lastOverallState) {
             // Read it out loud
             val spokenString = if (newOverallState) "User is moving" else "No movement"
             TTSManager.getInstance(this).speak(spokenString)
             BuzzManager.getInstance(this).buzz(100)
-        }
+//        }
         lastOverallState = newOverallState
     }
 }
