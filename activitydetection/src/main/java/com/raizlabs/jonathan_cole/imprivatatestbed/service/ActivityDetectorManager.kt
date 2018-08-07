@@ -5,19 +5,25 @@ import android.hardware.*
 import android.os.Handler
 import android.util.Log
 import android.widget.Toast
+import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.ActivityRecognitionResult
+import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BroadcastManager
 
-class ActivityDetectorManager(val service: ActivityDetectorService): SensorEventListener, TriggerEventListener() {
+class ActivityDetectorManager(val service: ActivityDetectorService) : SensorEventListener, TriggerEventListener() {
 
     companion object {
         const val TAG = "ActivityDetectorManager"
     }
 
-    var mStepCounterHistory = mutableListOf<EventReading>()
-    var mStepDetectorHistory = mutableListOf<EventReading>()
-    var mSignificantMotionDetectorHistory = mutableListOf<EventReading>()
-    var mActivityRecognitionHistory = mutableListOf<ActivityReading>()
-    var mProximityDetectorHistory = mutableListOf<EventReading>()
+    private val maxReportLatencyUs: Int = 0 // Setting to 0 will disable batching for sensors that support it.
+    private val samplingPeriodUs: Int = SensorManager.SENSOR_DELAY_FASTEST
+    private val broadcastManager = BroadcastManager.getInstance(service)
+    private var mStepCounterHistory = mutableListOf<EventReading>()
+    private var mStepDetectorHistory = mutableListOf<EventReading>()
+    private var mSignificantMotionDetectorHistory = mutableListOf<EventReading>()
+    private var mActivityRecognitionHistory = mutableListOf<ActivityReading>()
+    private var mProximityDetectorHistory = mutableListOf<EventReading>()
+    private var mActivityRecognitionClient: ActivityRecognitionClient? = null
 
     lateinit var mSensorManager: SensorManager
     lateinit var mStepCounter: Sensor
@@ -27,14 +33,21 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
 
     private var mHandler: Handler? = null
 
-    private val maxReportLatencyUs: Int = 0 // Setting to 0 will disable batching for sensors that support it.
-    private val samplingPeriodUs: Int = SensorManager.SENSOR_DELAY_FASTEST
 
     var windowSizeMS = 10 * 1000 // 10 seconds
 
     init {
         registerListeners()
         beginAutomaticRefreshing(1000)
+        registerActivityRecognitionListeners()
+
+    }
+
+    private fun registerActivityRecognitionListeners() {
+        // Set up the activity recognition API, which will communicate with the ActivityDetectorService.
+        mActivityRecognitionClient = ActivityRecognitionClient(service)
+        mActivityRecognitionClient?.requestActivityUpdates(0, broadcastManager.getActivityDetectionPendingIntent())
+        broadcastManager.registerForActivityRecognitionUpdates { onRegisterNewActivityData(it)}
     }
 
     fun registerListeners() {
@@ -73,11 +86,13 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
 
         mSensorManager.registerListener(this, mProximityDetector, samplingPeriodUs, maxReportLatencyUs)
         mSensorManager.requestTriggerSensor(this, mSignificantMotionDetector)
-
     }
 
     fun unregisterListeners() {
         mSensorManager.unregisterListener(this)
+        mActivityRecognitionClient?.removeActivityUpdates(broadcastManager.getActivityDetectionPendingIntent())
+        broadcastManager.unregisterFromActivityRecognitionUpdates()
+        endAutomaticRefreshing()
     }
 
     private fun logSensorInfo(sensor: Sensor, name: String) {
@@ -85,9 +100,9 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
             _
             -------- $name --------
             Internal name: ${sensor.name}
-            FIFO max event count: ${sensor.fifoMaxEventCount} ${ if (sensor.fifoMaxEventCount == 0) "(batching disabled)" else ""}
+            FIFO max event count: ${sensor.fifoMaxEventCount} ${if (sensor.fifoMaxEventCount == 0) "(batching disabled)" else ""}
             FIFO reserved event count: ${sensor.fifoReservedEventCount}
-            Is wake up sensor: ${sensor.isWakeUpSensor} ${ if (!sensor.isWakeUpSensor) "(will need to register partial wake lock to receive events while screen is off)" else "" }
+            Is wake up sensor: ${sensor.isWakeUpSensor} ${if (!sensor.isWakeUpSensor) "(will need to register partial wake lock to receive events while screen is off)" else ""}
             Reporting mode: ${sensor.reportingMode}
             Type: ${sensor.stringType}
             Power: ${sensor.power}mA
@@ -145,7 +160,7 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
     }
 
     // Activity Recognition API listener
-    fun onRegisterNewActivityData(result: ActivityRecognitionResult) {
+    private fun onRegisterNewActivityData(result: ActivityRecognitionResult) {
         prune()
         mActivityRecognitionHistory.add(ActivityReading(result))
         dispatch()
@@ -184,13 +199,13 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
     fun dispatch() {
         // Give the model to the service to be broadcasted to listeners.
         val model = ActivityDataHistories(
-            mStepCounterHistory,
-            mStepDetectorHistory,
-            mSignificantMotionDetectorHistory,
-            mActivityRecognitionHistory,
-            mProximityDetectorHistory
+                mStepCounterHistory,
+                mStepDetectorHistory,
+                mSignificantMotionDetectorHistory,
+                mActivityRecognitionHistory,
+                mProximityDetectorHistory
         )
-        service.dispatchNewDataHistory(model)
+        broadcastManager.dispatchNewDataHistory(model)
     }
 
     /**
@@ -214,5 +229,4 @@ class ActivityDetectorManager(val service: ActivityDetectorService): SensorEvent
     fun endAutomaticRefreshing() {
         mHandler?.removeCallbacksAndMessages(null)
     }
-
 }

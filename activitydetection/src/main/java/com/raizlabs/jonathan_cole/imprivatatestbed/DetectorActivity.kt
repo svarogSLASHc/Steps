@@ -1,24 +1,17 @@
 package com.raizlabs.jonathan_cole.imprivatatestbed
 
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Parcelable
-import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.DetectedActivity
+import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BroadcastManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.BuzzManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.manager.TTSManager
 import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDataHistories
 import com.raizlabs.jonathan_cole.imprivatatestbed.service.ActivityDetectorService
-import com.raizlabs.jonathan_cole.imprivatatestbed.service.recognizer.ActivityRecognitionIntent
 import kotlinx.android.synthetic.main.activity_main_detection.*
 
 /**
@@ -27,7 +20,7 @@ import kotlinx.android.synthetic.main.activity_main_detection.*
  * MainActivity sets up an ActivityDetectorService. This will listen for sensor events
  * while keeping a windowed history of prior events. When any one sensor updates (and
  * every second by default), all history data will be broadcasted locally and picked up
- * by MainActivity (see ActivityBroadcastReceiver).
+ * by MainActivity (see ActivityHistoryBroadcastReceiver).
  *
  * The Android Activity Recognition API uses PendingIntents to dispatch events, so an
  * additional step is required for setup in MainActivity, as shown below. Essentially,
@@ -37,13 +30,9 @@ import kotlinx.android.synthetic.main.activity_main_detection.*
  */
 class DetectorActivity : AppCompatActivity() {
 
+    private lateinit var broadcastManager: BroadcastManager
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: ActivityRecognitionAdapter
-    private lateinit var viewManager: RecyclerView.LayoutManager
-
-    private var mActivityRecognitionClient: ActivityRecognitionClient? = null
-
-    private var mBroadCastReceiver: ActivityBroadcastReceiver? = null
     private lateinit var mService: Intent
 
     var lastOverallState = false
@@ -54,8 +43,8 @@ class DetectorActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main_detection)
 
         title = "Walkaway Detector"
+        broadcastManager = BroadcastManager.getInstance(this.applicationContext)
 
-        viewManager = LinearLayoutManager(this)
         viewAdapter = ActivityRecognitionAdapter(listOf(
                 ActivityRecognitionModel(DetectedActivity.STILL, "Still"),
                 ActivityRecognitionModel(DetectedActivity.WALKING, "Walking"),
@@ -69,54 +58,30 @@ class DetectorActivity : AppCompatActivity() {
 
         recyclerView = activity_recognition_rv.apply {
             setHasFixedSize(true)
-            layoutManager = viewManager
+            layoutManager = LinearLayoutManager(this@DetectorActivity)
             adapter = viewAdapter
         }
 
         viewAdapter.notifyDataSetChanged()
 
-        mBroadCastReceiver = ActivityBroadcastReceiver()
-        mBroadCastReceiver?.let { receiver ->
-            LocalBroadcastManager.getInstance(this).registerReceiver(
-                    receiver, IntentFilter("ActivityUpdate"))
-        }
-
+        broadcastManager.registerForHistoryUpdates { onReceivedNewHistoryData(it) }
         // Set up the service for activity detection (our custom windowed history keeping code)
         mService = Intent(this, ActivityDetectorService::class.java)
         startService(mService)
-
-        // Set up the activity recognition API, which will communicate with the ActivityDetectorService.
-        mActivityRecognitionClient = ActivityRecognitionClient(this)
-        mActivityRecognitionClient?.requestActivityUpdates(0, getActivityDetectionPendingIntent())
-
-    }
-
-    /**
-     * Gets a PendingIntent to be sent for each activity recognition update.
-     */
-    private fun getActivityDetectionPendingIntent(): PendingIntent {
-        val intent = Intent(this, ActivityRecognitionIntent::class.java)
-
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // requestActivityUpdates() and removeActivityUpdates().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     override fun onDestroy() {
         TTSManager.getInstance(this).onDestroy()
 
         stopService(mService)
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadCastReceiver as BroadcastReceiver)
-
-        mActivityRecognitionClient?.removeActivityUpdates(getActivityDetectionPendingIntent())
-
+        broadcastManager.unregisterFromNewDataHistory()
         super.onDestroy()
     }
 
     /**
      * Update the UI with the new state of the data history given by the service.
      */
-    fun onReceivedNewHistoryData(data: ActivityDataHistories) {
+    private fun onReceivedNewHistoryData(data: ActivityDataHistories) {
 
         // There's a lot of optimization that can be done here. Will be revisiting this in
         // the Java rewrite.
@@ -220,19 +185,5 @@ class DetectorActivity : AppCompatActivity() {
             BuzzManager.getInstance(this).buzz(100)
         }
         lastOverallState = newOverallState
-
-    }
-
-    inner class ActivityBroadcastReceiver : BroadcastReceiver() {
-
-        override fun onReceive(context: Context?, intent: Intent?) {
-            intent?.let {
-                val b = it.getBundleExtra("data")
-                val history = b.getParcelable<Parcelable>("history") as ActivityDataHistories
-
-                onReceivedNewHistoryData(history)
-            }
-        }
-
     }
 }
