@@ -5,8 +5,8 @@ apply from: "$project.rootDir/build_common.gradle"
 android {
     defaultConfig {
         applicationId "com.test.pedometer"
-        versionCode 12
-        versionName "1.2"
+        versionCode 13
+        versionName "1.9"
     }
 }
 
