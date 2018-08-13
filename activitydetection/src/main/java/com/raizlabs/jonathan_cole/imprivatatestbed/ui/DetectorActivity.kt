@@ -116,12 +116,12 @@ class DetectorActivity : AppCompatActivity() {
 
         // If the overall state has changed, read it out loud
         val newOverallState = adaptedData.getOverallEvaluation()
-//        if (newOverallState != lastOverallState) {
+        if (newOverallState != lastOverallState) {
             // Read it out loud
             val spokenString = if (newOverallState) "User is moving" else "No movement"
             TTSManager.getInstance(this).speak(spokenString)
             BuzzManager.getInstance(this).buzz(100)
-//        }
+        }
         lastOverallState = newOverallState
     }
 }
