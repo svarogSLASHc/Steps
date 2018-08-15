@@ -25,6 +25,6 @@ public class PopupController {
     }
 
     public boolean isSamsung(Context context){
-        return repository.isSumsung(context);
+        return repository.isSamsung(context);
     }
 }

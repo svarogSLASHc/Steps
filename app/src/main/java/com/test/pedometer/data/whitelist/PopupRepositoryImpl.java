@@ -29,7 +29,7 @@ public class PopupRepositoryImpl implements PopupRepository {
     }
 
     @Override
-    public boolean isSumsung(Context context) {
+    public boolean isSamsung(Context context) {
         return hasBatteryMonitor(context);
     }
 

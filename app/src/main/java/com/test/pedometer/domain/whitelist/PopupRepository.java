@@ -9,7 +9,7 @@ public interface PopupRepository {
 
     boolean showed();
 
-    boolean isSumsung(Context context);
+    boolean isSamsung(Context context);
 
     void setShowed();
 }
